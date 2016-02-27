@@ -16,7 +16,7 @@ const (
 	TRACE   = "TRACE"
 )
 
-type UnsupportedMethod struct {
+type MethodNotAllowed struct {
 	Method string
 	Expect []string
 }
@@ -29,7 +29,7 @@ func MethodFilter(methods ...string) Filter {
 
 	return func(w http.ResponseWriter, r *http.Request, s Service) Error {
 		if _, ok := ms[r.Method]; !ok {
-			return UnsupportedMethod{
+			return MethodNotAllowed{
 				Method: r.Method,
 				Expect: methods,
 			}

@@ -23,7 +23,7 @@ func TestMethodFilter(t *testing.T) {
 
 	callMe := tt.CallMe()
 	h2 := service.Recover(func(w http.ResponseWriter, r *http.Request, err Error) {
-		e, _ := err.(UnsupportedMethod)
+		e, _ := err.(MethodNotAllowed)
 		tt.MustEqual(e.Method, DELETE)
 		tt.MustEqual(e.Expect[0], GET)
 		tt.MustEqual(e.Expect[1], POST)
