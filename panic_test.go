@@ -11,8 +11,6 @@ func panicHandler(w http.ResponseWriter, r *http.Request) {
 	panic("panic")
 }
 
-func successHandler(w http.ResponseWriter, r *http.Request) {}
-
 func TestPanicFilter(t *testing.T) {
 	tt := testutil.T{t}
 	filter := Middleware(PanicFilter)
