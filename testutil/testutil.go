@@ -1,7 +1,11 @@
 package testutil
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -11,11 +15,37 @@ type T struct {
 	*testing.T
 }
 
-func (t *T) MustEqual(a interface{}, b interface{}) {
-	if a != b {
-		t.Error("Error: MustEqual")
-		t.Errorf(" Left: %#v", a)
-		t.Errorf("Right: %#v", b)
+func (t *T) println(s string) {
+	fmt.Fprintln(os.Stderr, "\t\t"+s)
+}
+
+func (t *T) printf(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, "\t\t"+format, args...)
+}
+
+func (t *T) fail(name string) {
+	var file string
+	var line int
+	_, file, line, ok := runtime.Caller(2)
+	if ok {
+		if index := strings.LastIndex(file, "/"); index >= 0 {
+			file = file[index+1:]
+		} else if index = strings.LastIndex(file, "\\"); index >= 0 {
+			file = file[index+1:]
+		}
+	} else {
+		file = "???"
+		line = 1
+	}
+	fmt.Fprintf(os.Stderr, "\t%s:%d:%s\n", file, line, name)
+	t.Fail()
+}
+
+func (t *T) MustEqual(l interface{}, r interface{}) {
+	if l != r {
+		t.fail("MustEqual")
+		t.printf(" Left: %#v\n", l)
+		t.printf("Right: %#v\n", r)
 	}
 }
 
@@ -47,14 +77,14 @@ func (cm *callMe) Call() {
 
 func (cm *callMe) MustCalled() {
 	if cm.count == 0 {
-		cm.t.Error("Error: MustCalled")
+		cm.t.fail("MustCalled")
 	}
 }
 
 func (cm *callMe) MustCalledTimes(n uint) {
 	if cm.count < n {
-		cm.t.Error("Error: MustCalledTimes")
-		cm.t.Errorf("Expect: %d times", n)
-		cm.t.Errorf("Actual: %d times", cm.count)
+		cm.t.fail("MustCalledTimes")
+		cm.t.printf("Expect: %d times\n", n)
+		cm.t.printf("Actual: %d times\n", cm.count)
 	}
 }
