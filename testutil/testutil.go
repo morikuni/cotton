@@ -82,7 +82,7 @@ func (cm *callMe) MustCalled() {
 }
 
 func (cm *callMe) MustCalledTimes(n uint) {
-	if cm.count < n {
+	if cm.count != n {
 		cm.t.fail("MustCalledTimes")
 		cm.t.printf("Expect: %d times\n", n)
 		cm.t.printf("Actual: %d times\n", cm.count)
