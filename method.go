@@ -21,7 +21,7 @@ type MethodNotAllowed struct {
 	Expect []string
 }
 
-func MethodFilter(methods ...string) Filter {
+func MethodFilter(methods ...string) Middleware {
 	ms := make(map[string]struct{})
 	for _, m := range methods {
 		ms[m] = struct{}{}

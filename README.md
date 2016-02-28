@@ -13,21 +13,21 @@ go get github.com/morikuni/aec
 
 ## Design
 
-cotton is designed as Filter/Middleware for `http.HandlerFunc` and work with `net/http`.  
+cotton is designed as Middleware for `http.HandlerFunc` and work with `net/http`.  
 There are 4 important types.
 
 - http.HandlerFunc
-- Filter
+- Middleware
 - Service
 - RecoverFunc
 
 Flexible `http.HandlerFunc` can be made by composing these types.
 
 ```
-Filter  + Filter           => Filter
-Filter  + http.HandlerFunc => Service
-Filter  + Service          => Service
-Service + RecoverFunc      => http.HandlerFunc
+Middleware  + Middleware       => Middleware
+Middleware  + http.HandlerFunc => Service
+Middleware  + Service          => Service
+Service     + RecoverFunc      => http.HandlerFunc
 ```
 
 ## Example
@@ -43,11 +43,11 @@ import (
 )
 
 func main() {
-	// Filter + Filter => Filter
-	myFilter := cotton.Filter(cotton.PanicFilter).And(cotton.MethodFilter(cotton.GET))
+	// Middleware + Middleware => Middleware
+	myMiddleware := cotton.Middleware(cotton.PanicFilter).And(cotton.MethodFilter(cotton.GET))
 
-	// Filter + http.HandlerFunc => Service
-	myService := myFilter.For(func(w http.ResponseWriter, r *http.Request) {
+	// Middleware + http.HandlerFunc => Service
+	myService := myMiddleware.For(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello\n"))
 	})
 

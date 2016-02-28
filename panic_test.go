@@ -15,7 +15,7 @@ func successHandler(w http.ResponseWriter, r *http.Request) {}
 
 func TestPanicFilter(t *testing.T) {
 	tt := testutil.T{t}
-	filter := Filter(PanicFilter)
+	filter := Middleware(PanicFilter)
 
 	ps := filter.For(panicHandler)
 	callMe := tt.CallMe()

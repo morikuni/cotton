@@ -6,23 +6,23 @@ import (
 
 type Error interface{}
 
-type Filter func(w http.ResponseWriter, r *http.Request, s Service) Error
+type Middleware func(w http.ResponseWriter, r *http.Request, s Service) Error
 
-func (f Filter) And(next Filter) Filter {
+func (m Middleware) And(next Middleware) Middleware {
 	return func(w http.ResponseWriter, r *http.Request, s Service) Error {
-		return f(w, r, next.Then(s))
+		return m(w, r, next.Then(s))
 	}
 }
 
-func (f Filter) For(handler http.HandlerFunc) Service {
+func (m Middleware) For(handler http.HandlerFunc) Service {
 	return func(w http.ResponseWriter, r *http.Request) Error {
-		return f(w, r, handlerToService(handler))
+		return m(w, r, handlerToService(handler))
 	}
 }
 
-func (f Filter) Then(s Service) Service {
+func (m Middleware) Then(s Service) Service {
 	return func(w http.ResponseWriter, r *http.Request) Error {
-		return f(w, r, s)
+		return m(w, r, s)
 	}
 }
 
