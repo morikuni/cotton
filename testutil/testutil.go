@@ -19,24 +19,42 @@ func (t *T) MustEqual(a interface{}, b interface{}) {
 	}
 }
 
-func (t *T) CallMe() *CallMe {
-	return &CallMe{
-		t:    t,
-		flag: false,
+func (t *T) CallMe() CallMe {
+	return newCallMe(t)
+}
+
+type CallMe interface {
+	Call()
+	MustCalled()
+	MustCalledTimes(n uint)
+}
+
+type callMe struct {
+	t     *T
+	count uint
+}
+
+func newCallMe(t *T) CallMe {
+	return &callMe{
+		t:     t,
+		count: 0,
 	}
 }
 
-type CallMe struct {
-	t    *T
-	flag bool
+func (cm *callMe) Call() {
+	cm.count++
 }
 
-func (cm *CallMe) Call() {
-	cm.flag = true
-}
-
-func (cm *CallMe) MustCalled() {
-	if cm.flag == false {
+func (cm *callMe) MustCalled() {
+	if cm.count == 0 {
 		cm.t.Error("Error: MustCalled")
+	}
+}
+
+func (cm *callMe) MustCalledTimes(n uint) {
+	if cm.count < n {
+		cm.t.Error("Error: MustCalledTimes")
+		cm.t.Errorf("Expect: %d times", n)
+		cm.t.Errorf("Actual: %d times", cm.count)
 	}
 }
