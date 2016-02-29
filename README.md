@@ -19,7 +19,7 @@ There are 4 important types.
 - http.HandlerFunc
 - Middleware
 - Service
-- RecoverFunc
+- ErrorHandler
 
 Flexible `http.HandlerFunc` can be made by composing these types.
 
@@ -27,7 +27,7 @@ Flexible `http.HandlerFunc` can be made by composing these types.
 Middleware  + Middleware       => Middleware
 Middleware  + http.HandlerFunc => Service
 Middleware  + Service          => Service
-Service     + RecoverFunc      => http.HandlerFunc
+Service     + ErrorHandler     => http.HandlerFunc
 ```
 
 ## Example
@@ -51,7 +51,7 @@ func main() {
 		w.Write([]byte("Hello\n"))
 	})
 
-	// Service + RecoverFunc => http.HandlerFunc
+	// Service + ErrorHandler => http.HandlerFunc
 	myHandler := myService.Recover(func(w http.ResponseWriter, r *http.Request, err cotton.Error) {
 		switch e := err.(type) {
 		case cotton.PanicOccured:

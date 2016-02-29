@@ -8,6 +8,6 @@ import (
 // Error is a result of Middleware.
 type Error interface{}
 
-// RecoverFunc is a callback for a Service.
+// ErrorHandler is a callback for a Service.
 // Called only when the Service returned a Error.
-type RecoverFunc func(w http.ResponseWriter, r *http.Request, err Error)
+type ErrorHandler func(w http.ResponseWriter, r *http.Request, err Error)

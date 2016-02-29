@@ -8,13 +8,13 @@ import (
 // Error may be returned (nil on success).
 type Service func(w http.ResponseWriter, r *http.Request) Error
 
-// Recover registers a RecoverFunc as a Error handler.
+// Recover registers a ErrorHandler as a Error handler.
 // Registered function is called only when the Service returned a Error.
-func (s Service) Recover(f RecoverFunc) http.HandlerFunc {
+func (s Service) Recover(h ErrorHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := s(w, r)
 		if err != nil {
-			f(w, r, err)
+			h(w, r, err)
 		}
 	}
 }
