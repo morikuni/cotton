@@ -4,6 +4,7 @@ import (
 	"net/http"
 )
 
+// HTTP methods.
 const (
 	CONNECT = "CONNECT"
 	DELETE  = "DELETE"
@@ -16,11 +17,14 @@ const (
 	TRACE   = "TRACE"
 )
 
+// MethodNotAllowed is a Error of MethodFilter.
 type MethodNotAllowed struct {
 	Method string
 	Expect []string
 }
 
+// MethodFilter filters out disallowed HTTP methods.
+// Parameter methods is a list of allowed methods.
 func MethodFilter(methods ...string) Middleware {
 	ms := make(map[string]struct{})
 	for _, m := range methods {
