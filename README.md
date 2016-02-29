@@ -24,10 +24,10 @@ There are 4 important types.
 Flexible `http.HandlerFunc` can be made by composing these types.
 
 ```
-Middleware  + Middleware       => Middleware
-Middleware  + http.HandlerFunc => Service
-Middleware  + Service          => Service
-Service     + ErrorHandler     => http.HandlerFunc
+Middleware + Middleware       => Middleware
+Middleware + http.HandlerFunc => Service
+Middleware + Service          => Service
+Service    + ErrorHandler     => http.HandlerFunc
 ```
 
 ## Example
