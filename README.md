@@ -1,4 +1,4 @@
-# cotton
+# Cotton
 
 [![Build Status](https://travis-ci.org/morikuni/cotton.svg?branch=master)](https://travis-ci.org/morikuni/cotton)
 [![GoDoc](https://godoc.org/github.com/morikuni/cotton?status.svg)](https://godoc.org/github.com/morikuni/cotton)
@@ -13,7 +13,7 @@ go get github.com/morikuni/aec
 
 ## Design
 
-cotton is designed as Middleware for `http.HandlerFunc` and work with `net/http`.  
+Cotton is designed as Middleware for `http.HandlerFunc` and work with `net/http`.  
 There are 4 important types.
 
 - http.HandlerFunc
