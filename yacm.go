@@ -1,5 +1,5 @@
-// Package cotton is simple, lightweight and composable HTTP Handler/Middleware
-package cotton
+// Package yacm is simple, lightweight and composable HTTP Handler/Middleware
+package yacm
 
 import (
 	"net/http"

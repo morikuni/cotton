@@ -1,9 +1,9 @@
-# Cotton
+# YACM(八雲) - Yet Another Composable Middleware.
 
-[![Build Status](https://travis-ci.org/morikuni/cotton.svg?branch=master)](https://travis-ci.org/morikuni/cotton)
-[![GoDoc](https://godoc.org/github.com/morikuni/cotton?status.svg)](https://godoc.org/github.com/morikuni/cotton)
+[![Build Status](https://travis-ci.org/morikuni/yacm.svg?branch=master)](https://travis-ci.org/morikuni/yacm)
+[![GoDoc](https://godoc.org/github.com/morikuni/yacm?status.svg)](https://godoc.org/github.com/morikuni/yacm)
 
-Simple, Lightweight and Composable HTTP Handler/Middleware
+Simple, Lightweight and Composable HTTP Handler/Middleware.
 
 ## Install
 
@@ -13,7 +13,7 @@ go get github.com/morikuni/aec
 
 ## Design
 
-Cotton is designed as Middleware for `http.HandlerFunc` and work with `net/http`.  
+YACM is designed as Middleware for `http.HandlerFunc` and work with `net/http`.  
 There are 4 important types.
 
 - http.HandlerFunc
@@ -39,12 +39,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/morikuni/cotton"
+	"github.com/morikuni/yacm"
 )
 
 func main() {
 	// Middleware + Middleware => Middleware
-	myMiddleware := cotton.Middleware(cotton.PanicFilter).And(cotton.MethodFilter(cotton.GET))
+	myMiddleware := yacm.Middleware(yacm.PanicFilter).And(yacm.MethodFilter(yacm.GET))
 
 	// Middleware + http.HandlerFunc => Service
 	myService := myMiddleware.For(func(w http.ResponseWriter, r *http.Request) {
@@ -52,13 +52,13 @@ func main() {
 	})
 
 	// Service + ErrorHandler => http.HandlerFunc
-	myHandler := myService.Recover(func(w http.ResponseWriter, r *http.Request, err cotton.Error) {
+	myHandler := myService.Recover(func(w http.ResponseWriter, r *http.Request, err yacm.Error) {
 		switch e := err.(type) {
-		case cotton.PanicOccured:
+		case yacm.PanicOccured:
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Internal Server Error\n"))
 			log.Println(e.Reason)
-		case cotton.MethodNotAllowed:
+		case yacm.MethodNotAllowed:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			w.Write([]byte("Method Not Allowed\n"))
 			log.Printf("expect %v but %s\n", e.Expect, e.Method)

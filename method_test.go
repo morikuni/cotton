@@ -1,10 +1,10 @@
-package cotton
+package yacm
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/morikuni/cotton/testutil"
+	"github.com/morikuni/yacm/testutil"
 )
 
 func TestMethodFilter(t *testing.T) {
