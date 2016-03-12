@@ -1,4 +1,4 @@
-# YACM(八雲) - Yet Another Composable Middleware.
+# YACM(八雲) - Yet Another Composable Middleware
 
 [![Build Status](https://travis-ci.org/morikuni/yacm.svg?branch=master)](https://travis-ci.org/morikuni/yacm)
 [![GoDoc](https://godoc.org/github.com/morikuni/yacm?status.svg)](https://godoc.org/github.com/morikuni/yacm)
@@ -8,7 +8,7 @@ Simple, Lightweight and Composable HTTP Handler/Middleware.
 ## Install
 
 ```sh
-go get github.com/morikuni/aec
+go get github.com/morikuni/yacm
 ```
 
 ## Design
