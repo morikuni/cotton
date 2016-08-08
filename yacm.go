@@ -5,9 +5,6 @@ import (
 	"net/http"
 )
 
-// Error is a result of Middleware.
-type Error interface{}
-
 // ErrorHandler is a callback for a Service.
-// Called only when the Service returned a Error.
-type ErrorHandler func(w http.ResponseWriter, r *http.Request, err Error)
+// Called only when the Service returned a error.
+type ErrorHandler func(w http.ResponseWriter, r *http.Request, err error)

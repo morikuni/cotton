@@ -11,12 +11,12 @@ func TestService(t *testing.T) {
 	tt := &testutil.T{t}
 
 	callMe := tt.CallMe()
-	service := Service(func(w http.ResponseWriter, r *http.Request) Error {
+	service := Service(func(w http.ResponseWriter, r *http.Request) error {
 		callMe.Call()
 		return nil
 	})
 
-	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err Error) {
+	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
 		tt.Error("unreachable")
 	})
 

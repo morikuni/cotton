@@ -11,19 +11,19 @@ func TestMiddleware_And(t *testing.T) {
 	tt := &testutil.T{t}
 
 	callMe := tt.CallMe()
-	m1 := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) Error {
+	m1 := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		callMe.Call()
 		return s(w, r)
 	})
 
-	m2 := m1.And(func(w http.ResponseWriter, r *http.Request, s Service) Error {
+	m2 := m1.And(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		callMe.MustCalled()
 		callMe.Call()
 		return s(w, r)
 	})
 
 	service := m2.For(testutil.NOPHandler)
-	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err Error) {
+	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
 		tt.Error("unreachable")
 	})
 
@@ -36,7 +36,7 @@ func TestMiddleware_For(t *testing.T) {
 
 	callMe := tt.CallMe()
 	count := 0
-	middleware := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) Error {
+	middleware := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		count++
 		tt.MustEqual(count, 1)
 		callMe.Call()
@@ -50,7 +50,7 @@ func TestMiddleware_For(t *testing.T) {
 		callMe.Call()
 	})
 
-	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err Error) {
+	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
 		tt.Error("unreachable")
 	})
 
@@ -63,14 +63,14 @@ func TestMiddleware_Then(t *testing.T) {
 
 	callMe := tt.CallMe()
 	count := 0
-	middleware := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) Error {
+	middleware := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		count++
 		tt.MustEqual(count, 1)
 		callMe.Call()
 		return s(w, r)
 	})
 
-	service := middleware.Then(func(w http.ResponseWriter, r *http.Request) Error {
+	service := middleware.Then(func(w http.ResponseWriter, r *http.Request) error {
 		count++
 		tt.MustEqual(count, 2)
 		callMe.MustCalled()
@@ -78,7 +78,7 @@ func TestMiddleware_Then(t *testing.T) {
 		return nil
 	})
 
-	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err Error) {
+	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
 		tt.Error("unreachable")
 	})
 
