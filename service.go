@@ -18,3 +18,10 @@ func (s Service) Recover(h ErrorHandler) http.HandlerFunc {
 		}
 	}
 }
+
+// IgnoreError ignores a Error of the Service.
+func (s Service) IgnoreError() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s(w, r)
+	}
+}
