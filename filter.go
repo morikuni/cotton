@@ -28,6 +28,17 @@ func (f Filter) Then(s Service) Service {
 	}
 }
 
+// Recover registers a ErrorHandler as a error handler.
+// Registered function is called only when the Filter returned a error.
+func (f Filter) Recover(eh ErrorHandler) Middleware {
+	return func(w http.ResponseWriter, r *http.Request, h http.HandlerFunc) {
+		err := f(w, r, handlerToService(h))
+		if err != nil {
+			eh(w, r, err)
+		}
+	}
+}
+
 func handlerToService(handler http.HandlerFunc) Service {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		handler(w, r)
