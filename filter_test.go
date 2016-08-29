@@ -7,16 +7,16 @@ import (
 	"github.com/morikuni/yacm/testutil"
 )
 
-func TestMiddleware_And(t *testing.T) {
+func TestFilter_Compose(t *testing.T) {
 	tt := &testutil.T{t}
 
 	callMe := tt.CallMe()
-	m1 := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) error {
+	m1 := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		callMe.Call()
 		return s(w, r)
 	})
 
-	m2 := m1.And(func(w http.ResponseWriter, r *http.Request, s Service) error {
+	m2 := m1.Compose(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		callMe.MustCalled()
 		callMe.Call()
 		return s(w, r)
@@ -31,19 +31,19 @@ func TestMiddleware_And(t *testing.T) {
 	callMe.MustCalledTimes(2)
 }
 
-func TestMiddleware_For(t *testing.T) {
+func TestFilter_For(t *testing.T) {
 	tt := &testutil.T{t}
 
 	callMe := tt.CallMe()
 	count := 0
-	middleware := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) error {
+	filter := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		count++
 		tt.MustEqual(count, 1)
 		callMe.Call()
 		return s(w, r)
 	})
 
-	service := middleware.For(func(w http.ResponseWriter, r *http.Request) {
+	service := filter.For(func(w http.ResponseWriter, r *http.Request) {
 		count++
 		tt.MustEqual(count, 2)
 		callMe.MustCalled()
@@ -58,19 +58,19 @@ func TestMiddleware_For(t *testing.T) {
 	callMe.MustCalledTimes(2)
 }
 
-func TestMiddleware_Then(t *testing.T) {
+func TestFilter_Then(t *testing.T) {
 	tt := &testutil.T{t}
 
 	callMe := tt.CallMe()
 	count := 0
-	middleware := Middleware(func(w http.ResponseWriter, r *http.Request, s Service) error {
+	filter := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		count++
 		tt.MustEqual(count, 1)
 		callMe.Call()
 		return s(w, r)
 	})
 
-	service := middleware.Then(func(w http.ResponseWriter, r *http.Request) error {
+	service := filter.Then(func(w http.ResponseWriter, r *http.Request) error {
 		count++
 		tt.MustEqual(count, 2)
 		callMe.MustCalled()

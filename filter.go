@@ -4,27 +4,27 @@ import (
 	"net/http"
 )
 
-// Middleware is a middleware for http.HandlerFunc.
-type Middleware func(w http.ResponseWriter, r *http.Request, s Service) error
+// Filter is a middleware for http.HandlerFunc with error.
+type Filter func(w http.ResponseWriter, r *http.Request, s Service) error
 
-// And composes two Middlewares.
-func (m Middleware) And(next Middleware) Middleware {
+// Compose composes two Filters.
+func (f Filter) Compose(next Filter) Filter {
 	return func(w http.ResponseWriter, r *http.Request, s Service) error {
-		return m(w, r, next.Then(s))
+		return f(w, r, next.Then(s))
 	}
 }
 
 // For wraps a given http.HandlerFunc and upgrades to Serice.
-func (m Middleware) For(handler http.HandlerFunc) Service {
+func (f Filter) For(handler http.HandlerFunc) Service {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		return m(w, r, handlerToService(handler))
+		return f(w, r, handlerToService(handler))
 	}
 }
 
 // Then wraps a given Service.
-func (m Middleware) Then(s Service) Service {
+func (f Filter) Then(s Service) Service {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		return m(w, r, s)
+		return f(w, r, s)
 	}
 }
 
