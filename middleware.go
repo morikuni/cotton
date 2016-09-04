@@ -20,3 +20,14 @@ func (m Middleware) Apply(h http.HandlerFunc) http.HandlerFunc {
 		m(w, r, h)
 	}
 }
+
+// ToFilter changes Middleware into a Filter.
+func (m Middleware) ToFilter() Filter {
+	return func(w http.ResponseWriter, r *http.Request, s Service) error {
+		var err error
+		m(w, r, func(w2 http.ResponseWriter, r2 *http.Request) {
+			err = s(w2, r2)
+		})
+		return err
+	}
+}
