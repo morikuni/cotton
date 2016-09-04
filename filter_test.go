@@ -70,7 +70,7 @@ func TestFilter_Then(t *testing.T) {
 		return s(w, r)
 	})
 
-	service := filter.Then(func(w http.ResponseWriter, r *http.Request) error {
+	service := filter.Apply(func(w http.ResponseWriter, r *http.Request) error {
 		count++
 		tt.MustEqual(count, 2)
 		callMe.MustCalled()

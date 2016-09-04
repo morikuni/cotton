@@ -10,7 +10,7 @@ type Filter func(w http.ResponseWriter, r *http.Request, s Service) error
 // Compose composes two Filters.
 func (f Filter) Compose(next Filter) Filter {
 	return func(w http.ResponseWriter, r *http.Request, s Service) error {
-		return f(w, r, next.Then(s))
+		return f(w, r, next.Apply(s))
 	}
 }
 
@@ -21,8 +21,8 @@ func (f Filter) For(h http.HandlerFunc) Service {
 	}
 }
 
-// Then wraps a given Service.
-func (f Filter) Then(s Service) Service {
+// Apply wraps a given Service.
+func (f Filter) Apply(s Service) Service {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		return f(w, r, s)
 	}
