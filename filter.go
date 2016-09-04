@@ -14,8 +14,8 @@ func (f Filter) Compose(next Filter) Filter {
 	}
 }
 
-// For wraps a given http.HandlerFunc and upgrades to Serice.
-func (f Filter) For(h http.HandlerFunc) Service {
+// ApplyHandler wraps a given http.HandlerFunc and upgrades to Serice.
+func (f Filter) ApplyHandler(h http.HandlerFunc) Service {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		return f(w, r, handlerToService(h))
 	}

@@ -31,7 +31,7 @@ func TestFilter_Compose(t *testing.T) {
 	callMe.MustCalledTimes(2)
 }
 
-func TestFilter_For(t *testing.T) {
+func TestFilter_ApplyHandler(t *testing.T) {
 	tt := &testutil.T{t}
 
 	callMe := tt.CallMe()
