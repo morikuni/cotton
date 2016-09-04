@@ -3,85 +3,74 @@ package yacm
 import (
 	"net/http"
 	"testing"
-
-	"github.com/morikuni/yacm/testutil"
 )
 
 func TestFilter_Compose(t *testing.T) {
-	tt := &testutil.T{t}
-
-	callMe := tt.CallMe()
-	m1 := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
-		callMe.Call()
+	count := 0
+	f1 := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
+		count++
 		return s(w, r)
 	})
 
-	m2 := m1.Compose(func(w http.ResponseWriter, r *http.Request, s Service) error {
-		callMe.MustCalled()
-		callMe.Call()
-		return s(w, r)
+	f2 := f1.Compose(func(w http.ResponseWriter, r *http.Request, s Service) error {
+		if count != 1 {
+			t.Error("count must be 1")
+		}
+		count++
+		return nil
 	})
 
-	service := m2.ApplyHandler(testutil.NOPHandler)
-	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
-		tt.Error("unreachable")
-	})
-
-	handler(nil, nil)
-	callMe.MustCalledTimes(2)
+	f2(nil, nil, nil)
+	if count != 2 {
+		t.Error("count must be 2")
+	}
 }
 
 func TestFilter_ApplyHandler(t *testing.T) {
-	tt := &testutil.T{t}
-
-	callMe := tt.CallMe()
 	count := 0
 	filter := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		count++
-		tt.MustEqual(count, 1)
-		callMe.Call()
 		return s(w, r)
 	})
 
 	service := filter.ApplyHandler(func(w http.ResponseWriter, r *http.Request) {
+		if count != 1 {
+			t.Error("count must be 1")
+			count++
+		}
 		count++
-		tt.MustEqual(count, 2)
-		callMe.MustCalled()
-		callMe.Call()
 	})
 
-	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
-		tt.Error("unreachable")
-	})
-
-	handler(nil, nil)
-	callMe.MustCalledTimes(2)
+	err := service(nil, nil)
+	if err != nil {
+		t.Errorf("err must be nil but: %s", err.Error())
+	}
+	if count != 2 {
+		t.Error("count must be 2")
+	}
 }
 
-func TestFilter_Then(t *testing.T) {
-	tt := &testutil.T{t}
-
-	callMe := tt.CallMe()
+func TestFilter_Apply(t *testing.T) {
 	count := 0
 	filter := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		count++
-		tt.MustEqual(count, 1)
-		callMe.Call()
 		return s(w, r)
 	})
 
 	service := filter.Apply(func(w http.ResponseWriter, r *http.Request) error {
+		if count != 1 {
+			t.Error("count must be 1")
+			count++
+		}
 		count++
-		tt.MustEqual(count, 2)
-		callMe.MustCalled()
-		callMe.Call()
 		return nil
 	})
 
-	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
-		tt.Error("unreachable")
-	})
-
-	handler(nil, nil)
-	callMe.MustCalledTimes(2)
+	err := service(nil, nil)
+	if err != nil {
+		t.Errorf("err must be nil but: %s", err.Error())
+	}
+	if count != 2 {
+		t.Error("count must be 2")
+	}
 }
