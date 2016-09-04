@@ -1,6 +1,7 @@
 package yacm
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 )
@@ -49,13 +50,27 @@ func TestMiddleware_ToFilter(t *testing.T) {
 	count := 0
 	m := Middleware(func(w http.ResponseWriter, r *http.Request, h http.HandlerFunc) {
 		count++
-		return
+		h(w, r)
 	})
 
 	f := m.ToFilter()
 
-	f(nil, nil, nil)
-	if count != 1 {
-		t.Error("count must be 1")
+	s := f.Apply(func(w http.ResponseWriter, r *http.Request) error {
+		if count != 1 {
+			t.Error("count must be 1")
+		}
+		count++
+		return errors.New("error")
+	})
+
+	err := s(nil, nil)
+	if count != 2 {
+		t.Error("count must be 2")
+	}
+	if err == nil {
+		t.Error("error expected but nil")
+	}
+	if e := err.Error(); e != "error" {
+		t.Errorf("unexpected error: %s", e)
 	}
 }
