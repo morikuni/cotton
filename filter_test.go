@@ -22,7 +22,7 @@ func TestFilter_Compose(t *testing.T) {
 		return s(w, r)
 	})
 
-	service := m2.Apply(testutil.NOPHandler)
+	service := m2.ApplyHandler(testutil.NOPHandler)
 	handler := service.Recover(func(w http.ResponseWriter, r *http.Request, err error) {
 		tt.Error("unreachable")
 	})
@@ -43,7 +43,7 @@ func TestFilter_ApplyHandler(t *testing.T) {
 		return s(w, r)
 	})
 
-	service := filter.Apply(func(w http.ResponseWriter, r *http.Request) {
+	service := filter.ApplyHandler(func(w http.ResponseWriter, r *http.Request) {
 		count++
 		tt.MustEqual(count, 2)
 		callMe.MustCalled()
