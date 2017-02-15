@@ -1,76 +1,51 @@
 package yacm
 
 import (
-	"errors"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 )
 
 func TestMiddleware_Compose(t *testing.T) {
+	assert := assert.New(t)
+
 	count := 0
-	m1 := Middleware(func(w http.ResponseWriter, r *http.Request, h http.HandlerFunc) {
+	m1 := MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
+		assert.Equal(0, count)
 		count++
-		h(w, r)
+		h.ServeHTTP(w, r)
 	})
 
-	m2 := m1.Compose(func(w http.ResponseWriter, r *http.Request, h http.HandlerFunc) {
-		if count != 1 {
-			t.Error("count must be 1")
-		}
+	m2 := MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
+		assert.Equal(1, count)
+		count++
+		h.ServeHTTP(w, r)
+	})
+
+	m3 := MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
+		assert.Equal(2, count)
 		count++
 	})
 
-	m2(nil, nil, nil)
-	if count != 2 {
-		t.Error("count must be 2")
-	}
+	Compose(m1, m2, m3).WrapHandler(nil, nil, nil)
+	assert.Equal(3, count)
 }
 
 func TestMiddleware_Apply(t *testing.T) {
+	assert := assert.New(t)
+
 	count := 0
-	m := Middleware(func(w http.ResponseWriter, r *http.Request, h http.HandlerFunc) {
+	m := MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
+		assert.Equal(0, count)
 		count++
-		h(w, r)
+		h.ServeHTTP(w, r)
 	})
 
-	h := m.Apply(func(w http.ResponseWriter, r *http.Request) {
-		if count != 1 {
-			t.Error("count must be 1")
-		}
+	h := Apply(m, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(1, count)
 		count++
-	})
+	}))
 
-	h(nil, nil)
-	if count != 2 {
-		t.Error("count must be 2")
-	}
-}
-
-func TestMiddleware_ToFilter(t *testing.T) {
-	count := 0
-	m := Middleware(func(w http.ResponseWriter, r *http.Request, h http.HandlerFunc) {
-		count++
-		h(w, r)
-	})
-
-	f := m.ToFilter()
-
-	s := f.Apply(func(w http.ResponseWriter, r *http.Request) error {
-		if count != 1 {
-			t.Error("count must be 1")
-		}
-		count++
-		return errors.New("error")
-	})
-
-	err := s(nil, nil)
-	if count != 2 {
-		t.Error("count must be 2")
-	}
-	if err == nil {
-		t.Error("error expected but nil")
-	}
-	if e := err.Error(); e != "error" {
-		t.Errorf("unexpected error: %s", e)
-	}
+	h.ServeHTTP(nil, nil)
+	assert.Equal(2, count)
 }
