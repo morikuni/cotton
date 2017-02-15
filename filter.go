@@ -20,14 +20,14 @@ func ComposeFilter(filters ...Filter) Filter {
 			f := filters[i]
 			s = ApplyFilter(f, s)
 		}
-		return s(w, r)
+		return s.ServeHTTP(w, r)
 	})
 }
 
 func ApplyFilter(f Filter, s Service) Service {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		return f.WrapService(w, r, s)
-	}
+	})
 }
 
 func FilterToMiddleware(f Filter, eh ErrorHandler) Middleware {
@@ -40,8 +40,8 @@ func FilterToMiddleware(f Filter, eh ErrorHandler) Middleware {
 }
 
 func HandlerToService(h http.Handler) Service {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		h.ServeHTTP(w, r)
 		return nil
-	}
+	})
 }
