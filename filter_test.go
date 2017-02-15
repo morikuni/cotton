@@ -1,76 +1,54 @@
 package yacm
 
 import (
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 )
 
 func TestFilter_Compose(t *testing.T) {
+	assert := assert.New(t)
+
 	count := 0
-	f1 := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
+	f1 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
+		assert.Equal(0, count)
 		count++
 		return s(w, r)
 	})
 
-	f2 := f1.Compose(func(w http.ResponseWriter, r *http.Request, s Service) error {
-		if count != 1 {
-			t.Error("count must be 1")
-		}
+	f2 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
+		assert.Equal(1, count)
+		count++
+		return s(w, r)
+	})
+
+	f3 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
+		assert.Equal(2, count)
 		count++
 		return nil
 	})
 
-	f2(nil, nil, nil)
-	if count != 2 {
-		t.Error("count must be 2")
-	}
-}
-
-func TestFilter_ApplyHandler(t *testing.T) {
-	count := 0
-	filter := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
-		count++
-		return s(w, r)
-	})
-
-	service := filter.ApplyHandler(func(w http.ResponseWriter, r *http.Request) {
-		if count != 1 {
-			t.Error("count must be 1")
-			count++
-		}
-		count++
-	})
-
-	err := service(nil, nil)
-	if err != nil {
-		t.Errorf("err must be nil but: %s", err.Error())
-	}
-	if count != 2 {
-		t.Error("count must be 2")
-	}
+	ComposeFilter(f1, f2, f3).WrapService(nil, nil, nil)
+	assert.Equal(3, count)
 }
 
 func TestFilter_Apply(t *testing.T) {
+	assert := assert.New(t)
+
 	count := 0
-	filter := Filter(func(w http.ResponseWriter, r *http.Request, s Service) error {
+	f := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
+		assert.Equal(0, count)
 		count++
 		return s(w, r)
 	})
 
-	service := filter.Apply(func(w http.ResponseWriter, r *http.Request) error {
-		if count != 1 {
-			t.Error("count must be 1")
-			count++
-		}
+	service := ApplyFilter(f, func(w http.ResponseWriter, r *http.Request) error {
+		assert.Equal(1, count)
 		count++
 		return nil
 	})
 
 	err := service(nil, nil)
-	if err != nil {
-		t.Errorf("err must be nil but: %s", err.Error())
-	}
-	if count != 2 {
-		t.Error("count must be 2")
-	}
+	assert.Equal(2, count)
+	assert.Equal(nil, err)
 }

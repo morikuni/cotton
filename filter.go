@@ -4,44 +4,44 @@ import (
 	"net/http"
 )
 
-// Filter is a middleware for http.HandlerFunc with error.
-type Filter func(w http.ResponseWriter, r *http.Request, s Service) error
-
-// Compose composes two Filters.
-func (f Filter) Compose(next Filter) Filter {
-	return func(w http.ResponseWriter, r *http.Request, s Service) error {
-		return f(w, r, next.Apply(s))
-	}
+type Filter interface {
+	WrapService(w http.ResponseWriter, r *http.Request, s Service) error
 }
 
-// ApplyHandler wraps a given http.HandlerFunc and upgrades to Serice.
-func (f Filter) ApplyHandler(h http.HandlerFunc) Service {
+type FilterFunc func(w http.ResponseWriter, r *http.Request, s Service) error
+
+func (f FilterFunc) WrapService(w http.ResponseWriter, r *http.Request, s Service) error {
+	return f(w, r, s)
+}
+
+func ComposeFilter(filters ...Filter) Filter {
+	return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
+		for i := len(filters) - 1; i >= 0; i-- {
+			f := filters[i]
+			s = ApplyFilter(f, s)
+		}
+		return s(w, r)
+	})
+}
+
+func ApplyFilter(f Filter, s Service) Service {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		return f(w, r, handlerToService(h))
+		return f.WrapService(w, r, s)
 	}
 }
 
-// Apply wraps a given Service.
-func (f Filter) Apply(s Service) Service {
-	return func(w http.ResponseWriter, r *http.Request) error {
-		return f(w, r, s)
-	}
-}
-
-// Recover registers a ErrorHandler as a error handler.
-// Registered function is called only when the Filter returned a error.
-func (f Filter) Recover(eh ErrorHandler) Middleware {
-	return func(w http.ResponseWriter, r *http.Request, h http.HandlerFunc) {
-		err := f(w, r, handlerToService(h))
+func FilterToMiddleware(f Filter, eh ErrorHandler) Middleware {
+	return MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
+		err := f.WrapService(w, r, HandlerToService(h))
 		if err != nil {
 			eh(w, r, err)
 		}
-	}
+	})
 }
 
-func handlerToService(handler http.HandlerFunc) Service {
+func HandlerToService(h http.Handler) Service {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		handler(w, r)
+		h.ServeHTTP(w, r)
 		return nil
 	}
 }
