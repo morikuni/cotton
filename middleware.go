@@ -14,7 +14,7 @@ func (m MiddlewareFunc) WrapHandler(w http.ResponseWriter, r *http.Request, h ht
 	m(w, r, h)
 }
 
-func Compose(middlewares ...Middleware) Middleware {
+func ComposeMiddleware(middlewares ...Middleware) Middleware {
 	l := len(middlewares)
 	switch l {
 	case 0:
@@ -25,14 +25,14 @@ func Compose(middlewares ...Middleware) Middleware {
 		return middlewares[0]
 	default:
 		m := middlewares[0]
-		next := Compose(middlewares[1:]...)
+		next := ComposeMiddleware(middlewares[1:]...)
 		return MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
-			Apply(m, Apply(next, h)).ServeHTTP(w, r)
+			ApplyMiddleware(m, ApplyMiddleware(next, h)).ServeHTTP(w, r)
 		})
 	}
 }
 
-func Apply(m Middleware, h http.Handler) http.Handler {
+func ApplyMiddleware(m Middleware, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.WrapHandler(w, r, h)
 	})

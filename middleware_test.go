@@ -27,7 +27,7 @@ func TestMiddleware_Compose(t *testing.T) {
 		count++
 	})
 
-	Compose(m1, m2, m3).WrapHandler(nil, nil, nil)
+	ComposeMiddleware(m1, m2, m3).WrapHandler(nil, nil, nil)
 	assert.Equal(3, count)
 }
 
@@ -41,7 +41,7 @@ func TestMiddleware_Apply(t *testing.T) {
 		h.ServeHTTP(w, r)
 	})
 
-	h := Apply(m, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	h := ApplyMiddleware(m, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(1, count)
 		count++
 	}))
