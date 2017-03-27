@@ -37,19 +37,3 @@ func ApplyFilter(f Filter, s Service) Service {
 		return f.WrapService(w, r, s)
 	})
 }
-
-func FilterToMiddleware(f Filter, eh ErrorHandler) Middleware {
-	return MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
-		err := f.WrapService(w, r, HandlerToService(h))
-		if err != nil {
-			eh(w, r, err)
-		}
-	})
-}
-
-func HandlerToService(h http.Handler) Service {
-	return ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
-		h.ServeHTTP(w, r)
-		return nil
-	})
-}
