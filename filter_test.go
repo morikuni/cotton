@@ -13,13 +13,13 @@ func TestFilter_Compose(t *testing.T) {
 	f1 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		assert.Equal(0, count)
 		count++
-		return s.ServeHTTP(w, r)
+		return s.TryServeHTTP(w, r)
 	})
 
 	f2 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		assert.Equal(1, count)
 		count++
-		return s.ServeHTTP(w, r)
+		return s.TryServeHTTP(w, r)
 	})
 
 	f3 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
@@ -39,7 +39,7 @@ func TestFilter_Apply(t *testing.T) {
 	f := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		assert.Equal(0, count)
 		count++
-		return s.ServeHTTP(w, r)
+		return s.TryServeHTTP(w, r)
 	})
 
 	s := ApplyFilter(f, ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
@@ -48,7 +48,7 @@ func TestFilter_Apply(t *testing.T) {
 		return nil
 	}))
 
-	err := s.ServeHTTP(nil, nil)
+	err := s.TryServeHTTP(nil, nil)
 	assert.Equal(2, count)
 	assert.Equal(nil, err)
 }

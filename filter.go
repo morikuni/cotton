@@ -19,7 +19,7 @@ func ComposeFilter(filters ...Filter) Filter {
 	switch l {
 	case 0:
 		return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
-			return s.ServeHTTP(w, r)
+			return s.TryServeHTTP(w, r)
 		})
 	case 1:
 		return filters[0]
@@ -27,7 +27,7 @@ func ComposeFilter(filters ...Filter) Filter {
 		f := filters[0]
 		next := ComposeFilter(filters[1:]...)
 		return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
-			return ApplyFilter(f, ApplyFilter(next, s)).ServeHTTP(w, r)
+			return ApplyFilter(f, ApplyFilter(next, s)).TryServeHTTP(w, r)
 		})
 	}
 }
