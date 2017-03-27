@@ -18,9 +18,7 @@ func ComposeFilter(filters ...Filter) Filter {
 	l := len(filters)
 	switch l {
 	case 0:
-		return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
-			return s.TryServeHTTP(w, r)
-		})
+		panic(ErrEmptyArgs)
 	case 1:
 		return filters[0]
 	default:

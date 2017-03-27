@@ -18,9 +18,7 @@ func ComposeMiddleware(middlewares ...Middleware) Middleware {
 	l := len(middlewares)
 	switch l {
 	case 0:
-		return MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
-			h.ServeHTTP(w, r)
-		})
+		panic(ErrEmptyArgs)
 	case 1:
 		return middlewares[0]
 	default:
