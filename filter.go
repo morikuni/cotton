@@ -15,13 +15,21 @@ func (f FilterFunc) WrapService(w http.ResponseWriter, r *http.Request, s Servic
 }
 
 func ComposeFilter(filters ...Filter) Filter {
-	return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
-		for i := len(filters) - 1; i >= 0; i-- {
-			f := filters[i]
-			s = ApplyFilter(f, s)
-		}
-		return s.ServeHTTP(w, r)
-	})
+	l := len(filters)
+	switch l {
+	case 0:
+		return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
+			return s.ServeHTTP(w, r)
+		})
+	case 1:
+		return filters[0]
+	default:
+		f := filters[0]
+		next := ComposeFilter(filters[1:]...)
+		return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
+			return ApplyFilter(f, ApplyFilter(next, s)).ServeHTTP(w, r)
+		})
+	}
 }
 
 func ApplyFilter(f Filter, s Service) Service {
