@@ -23,6 +23,15 @@ func MiddlewareToFilter(m Middleware) Filter {
 	})
 }
 
+func ServiceToHandler(s Service, eh ErrorHandler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := s.TryServeHTTP(w, r)
+		if err != nil {
+			eh(w, r, err)
+		}
+	})
+}
+
 func HandlerToService(h http.Handler) Service {
 	return ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		h.ServeHTTP(w, r)
