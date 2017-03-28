@@ -35,3 +35,12 @@ func ComposeErrorHandler(handlers ...ErrorHandler) ErrorHandler {
 		return chainedErrorHandler(handlers)
 	}
 }
+
+func ApplyErrorHandler(eh ErrorHandler, es ErrorShutter) ErrorShutter {
+	return ErrorShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
+		err = eh.HandleError(w, r, err)
+		if err != nil {
+			es.ShutError(w, r, err)
+		}
+	})
+}
