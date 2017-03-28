@@ -12,9 +12,9 @@ func TestService(t *testing.T) {
 		return nil
 	})
 
-	h := ServiceToHandler(s, func(w http.ResponseWriter, r *http.Request, err error) {
+	h := ServiceToHandler(s, ErrorShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
 		t.Error("unreachable")
-	})
+	}))
 
 	h.ServeHTTP(nil, nil)
 	if count != 1 {

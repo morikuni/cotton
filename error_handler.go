@@ -23,6 +23,7 @@ func (c chainedErrorHandler) HandleError(w http.ResponseWriter, r *http.Request,
 			return nil
 		}
 	}
+	return err
 }
 
 func ComposeErrorHandler(handlers ...ErrorHandler) ErrorHandler {
