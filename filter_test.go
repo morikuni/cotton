@@ -1,6 +1,7 @@
 package yacm
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
@@ -9,6 +10,7 @@ import (
 func TestComposeFilter(t *testing.T) {
 	assert := assert.New(t)
 
+	dummyError := errors.New("dummy")
 	count := 0
 	f1 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		assert.Equal(0, count)
@@ -19,22 +21,23 @@ func TestComposeFilter(t *testing.T) {
 	f2 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		assert.Equal(1, count)
 		count++
-		return s.TryServeHTTP(w, r)
+		return dummyError
 	})
 
 	f3 := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
-		assert.Equal(2, count)
-		count++
+		assert.Fail("unexpected call")
 		return nil
 	})
 
-	ComposeFilter(f1, f2, f3).WrapService(nil, nil, nil)
-	assert.Equal(3, count)
+	err := ComposeFilter(f1, f2, f3).WrapService(nil, nil, nil)
+	assert.Equal(2, count)
+	assert.Equal(dummyError, err)
 }
 
 func TestApplyFilter(t *testing.T) {
 	assert := assert.New(t)
 
+	dummyError := errors.New("dummy")
 	count := 0
 	f := FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
 		assert.Equal(0, count)
@@ -45,10 +48,10 @@ func TestApplyFilter(t *testing.T) {
 	s := ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		assert.Equal(1, count)
 		count++
-		return nil
+		return dummyError
 	})
 
 	err := ApplyFilter(f, s).TryServeHTTP(nil, nil)
 	assert.Equal(2, count)
-	assert.Equal(nil, err)
+	assert.Equal(dummyError, err)
 }
