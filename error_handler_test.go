@@ -2,9 +2,10 @@ package yacm
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestComposeErrorHanler(t *testing.T) {
