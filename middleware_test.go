@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestMiddleware_Compose(t *testing.T) {
+func TestComposeMiddleware(t *testing.T) {
 	assert := assert.New(t)
 
 	count := 0
@@ -31,7 +31,7 @@ func TestMiddleware_Compose(t *testing.T) {
 	assert.Equal(3, count)
 }
 
-func TestMiddleware_Apply(t *testing.T) {
+func TestApplyMiddleware(t *testing.T) {
 	assert := assert.New(t)
 
 	count := 0
@@ -41,11 +41,11 @@ func TestMiddleware_Apply(t *testing.T) {
 		h.ServeHTTP(w, r)
 	})
 
-	h := ApplyMiddleware(m, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(1, count)
 		count++
-	}))
+	})
 
-	h.ServeHTTP(nil, nil)
+	ApplyMiddleware(m, h).ServeHTTP(nil, nil)
 	assert.Equal(2, count)
 }

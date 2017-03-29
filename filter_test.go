@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFilter_Compose(t *testing.T) {
+func TestComposeFilter(t *testing.T) {
 	assert := assert.New(t)
 
 	count := 0
@@ -32,7 +32,7 @@ func TestFilter_Compose(t *testing.T) {
 	assert.Equal(3, count)
 }
 
-func TestFilter_Apply(t *testing.T) {
+func TestApplyFilter(t *testing.T) {
 	assert := assert.New(t)
 
 	count := 0
@@ -42,13 +42,13 @@ func TestFilter_Apply(t *testing.T) {
 		return s.TryServeHTTP(w, r)
 	})
 
-	s := ApplyFilter(f, ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
+	s := ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		assert.Equal(1, count)
 		count++
 		return nil
-	}))
+	})
 
-	err := s.TryServeHTTP(nil, nil)
+	err := ApplyFilter(f, s).TryServeHTTP(nil, nil)
 	assert.Equal(2, count)
 	assert.Equal(nil, err)
 }
