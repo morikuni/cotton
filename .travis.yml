@@ -1,13 +1,12 @@
 language: go
 
-os:
-  - linux
-  - osx
-
-notifications:
-  email: false
-
 go:
-  - 1.5
-  - 1.6
-  - tip
+  - 1.8.x
+
+before_install:
+  - go get -u github.com/golang/dep/...
+
+install:
+  - dep ensure
+
+script: go test -v $(go list ./... | grep -v vendor)
