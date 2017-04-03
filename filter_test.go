@@ -30,7 +30,7 @@ func TestComposeFilter(t *testing.T) {
 		return nil
 	})
 
-	err := ComposeFilter(f1, f2, f3).WrapService(nil, nil, nil)
+	err := ComposeFilters(f1, f2, f3).WrapService(nil, nil, nil)
 	assert.Equal(2, count)
 	assert.Equal(dummyError, err)
 }

@@ -14,7 +14,7 @@ func (f FilterFunc) WrapService(w http.ResponseWriter, r *http.Request, s Servic
 	return f(w, r, s)
 }
 
-func ComposeFilter(filters ...Filter) Filter {
+func ComposeFilters(filters ...Filter) Filter {
 	l := len(filters)
 	switch l {
 	case 0:
@@ -23,7 +23,7 @@ func ComposeFilter(filters ...Filter) Filter {
 		return filters[0]
 	default:
 		f := filters[0]
-		next := ComposeFilter(filters[1:]...)
+		next := ComposeFilters(filters[1:]...)
 		return FilterFunc(func(w http.ResponseWriter, r *http.Request, s Service) error {
 			return ApplyFilter(f, ApplyFilter(next, s)).TryServeHTTP(w, r)
 		})

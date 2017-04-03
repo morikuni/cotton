@@ -28,7 +28,7 @@ func TestComposeMiddleware(t *testing.T) {
 		count++
 	})
 
-	ComposeMiddleware(m1, m2, m3).WrapHandler(nil, nil, nil)
+	ComposeMiddlewares(m1, m2, m3).WrapHandler(nil, nil, nil)
 	assert.Equal(3, count)
 }
 
