@@ -44,3 +44,7 @@ func ApplyErrorHandler(eh ErrorHandler, es ErrorShutter) ErrorShutter {
 		}
 	})
 }
+
+func ApplyErrorHandlerToFunc(eh ErrorHandler, es func(http.ResponseWriter, *http.Request, error)) ErrorShutter {
+	return ApplyErrorHandler(eh, ErrorShutterFunc(es))
+}

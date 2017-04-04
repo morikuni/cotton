@@ -35,3 +35,7 @@ func ApplyMiddleware(m Middleware, h http.Handler) http.Handler {
 		m.WrapHandler(w, r, h)
 	})
 }
+
+func ApplyMiddlewareToFunc(m Middleware, h func(http.ResponseWriter, *http.Request)) http.Handler {
+	return ApplyMiddleware(m, http.HandlerFunc(h))
+}
