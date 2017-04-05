@@ -26,7 +26,7 @@ func (c chainedErrorHandler) HandleError(w http.ResponseWriter, r *http.Request,
 	return err
 }
 
-func ComposeErrorHandler(handlers ...ErrorHandler) ErrorHandler {
+func ComposeErrorHandlers(handlers ...ErrorHandler) ErrorHandler {
 	l := len(handlers)
 	switch l {
 	case 0:

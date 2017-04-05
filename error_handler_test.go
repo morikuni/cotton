@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestComposeErrorHanler(t *testing.T) {
+func TestComposeErrorHanlers(t *testing.T) {
 	assert := assert.New(t)
 
 	dummyError := errors.New("dummy")
@@ -31,7 +31,7 @@ func TestComposeErrorHanler(t *testing.T) {
 		return nil
 	})
 
-	err := ComposeErrorHandler(h1, h2, h3).HandleError(nil, nil, dummyError)
+	err := ComposeErrorHandlers(h1, h2, h3).HandleError(nil, nil, dummyError)
 	assert.Equal(2, count)
 	assert.Equal(nil, err)
 }
