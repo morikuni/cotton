@@ -21,7 +21,7 @@ func (f Tester) WrapService(w http.ResponseWriter, r *http.Request, next Service
 	return next.TryServeHTTP(w, r)
 }
 
-func (f Tester) HandleError(w http.ResponseWriter, r *http.Request, err error) error {
+func (f Tester) CatchError(w http.ResponseWriter, r *http.Request, err error) error {
 	f.a.Equal(f.expect, *f.count)
 	*f.count++
 	return err

@@ -5,20 +5,20 @@ import (
 )
 
 type Catcher interface {
-	HandleError(w http.ResponseWriter, r *http.Request, err error) error
+	CatchError(w http.ResponseWriter, r *http.Request, err error) error
 }
 
 type CatcherFunc func(w http.ResponseWriter, r *http.Request, err error) error
 
-func (f CatcherFunc) HandleError(w http.ResponseWriter, r *http.Request, err error) error {
+func (f CatcherFunc) CatchError(w http.ResponseWriter, r *http.Request, err error) error {
 	return f(w, r, err)
 }
 
 type chainedCatcher []Catcher
 
-func (c chainedCatcher) HandleError(w http.ResponseWriter, r *http.Request, err error) error {
+func (c chainedCatcher) CatchError(w http.ResponseWriter, r *http.Request, err error) error {
 	for _, h := range c {
-		err = h.HandleError(w, r, err)
+		err = h.CatchError(w, r, err)
 		if err == nil {
 			return nil
 		}
@@ -38,7 +38,7 @@ func ComposeCatchers(cs ...Catcher) Catcher {
 
 func ApplyCatcher(c Catcher, s Shutter) Shutter {
 	return ShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
-		err = c.HandleError(w, r, err)
+		err = c.CatchError(w, r, err)
 		if err != nil {
 			s.ShutError(w, r, err)
 		}

@@ -31,7 +31,7 @@ func TestComposeErrorHanlers(t *testing.T) {
 		return nil
 	})
 
-	err := ComposeCatchers(c1, c2, c3).HandleError(nil, nil, dummyError)
+	err := ComposeCatchers(c1, c2, c3).CatchError(nil, nil, dummyError)
 	assert.Equal(2, count)
 	assert.Equal(nil, err)
 }
