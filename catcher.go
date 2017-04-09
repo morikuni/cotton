@@ -36,15 +36,15 @@ func ComposeCatchers(cs ...Catcher) Catcher {
 	}
 }
 
-func ApplyCatcher(c Catcher, es ErrorShutter) ErrorShutter {
-	return ErrorShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
+func ApplyCatcher(c Catcher, s Shutter) Shutter {
+	return ShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
 		err = c.HandleError(w, r, err)
 		if err != nil {
-			es.ShutError(w, r, err)
+			s.ShutError(w, r, err)
 		}
 	})
 }
 
-func ApplyCatcherToFunc(c Catcher, es func(http.ResponseWriter, *http.Request, error)) ErrorShutter {
-	return ApplyCatcher(c, ErrorShutterFunc(es))
+func ApplyCatcherToFunc(c Catcher, s func(http.ResponseWriter, *http.Request, error)) Shutter {
+	return ApplyCatcher(c, ShutterFunc(s))
 }

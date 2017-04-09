@@ -4,11 +4,11 @@ import (
 	"net/http"
 )
 
-func FilterToMiddleware(f Filter, es ErrorShutter) Middleware {
+func FilterToMiddleware(f Filter, s Shutter) Middleware {
 	return MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
 		err := f.WrapService(w, r, HandlerToService(h))
 		if err != nil {
-			es.ShutError(w, r, err)
+			s.ShutError(w, r, err)
 		}
 	})
 }
@@ -23,11 +23,11 @@ func MiddlewareToFilter(m Middleware) Filter {
 	})
 }
 
-func ServiceToHandler(s Service, es ErrorShutter) http.Handler {
+func ServiceToHandler(s Service, shutter Shutter) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := s.TryServeHTTP(w, r)
 		if err != nil {
-			es.ShutError(w, r, err)
+			shutter.ShutError(w, r, err)
 		}
 	})
 }

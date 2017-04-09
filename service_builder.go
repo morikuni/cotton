@@ -11,11 +11,11 @@ var (
 type ServiceBuilder struct {
 	filter  Filter
 	catcher Catcher
-	shutter ErrorShutter
+	shutter Shutter
 }
 
 func newServiceBuilder() ServiceBuilder {
-	return ServiceBuilder{nil, nil, DefaultErrorShutter}
+	return ServiceBuilder{nil, nil, DefaultShutter}
 }
 
 func (b ServiceBuilder) cloneWithFilter(f Filter) ServiceBuilder {
@@ -50,16 +50,16 @@ func (b ServiceBuilder) AppendCatcherFunc(f func(http.ResponseWriter, *http.Requ
 	return b.AppendCatchers(CatcherFunc(f))
 }
 
-func (b ServiceBuilder) cloneWithErrorShutter(es ErrorShutter) ServiceBuilder {
-	return ServiceBuilder{b.filter, b.catcher, es}
+func (b ServiceBuilder) cloneWithShutter(s Shutter) ServiceBuilder {
+	return ServiceBuilder{b.filter, b.catcher, s}
 }
 
-func (b ServiceBuilder) WithErrorShutter(es ErrorShutter) ServiceBuilder {
-	return b.cloneWithErrorShutter(es)
+func (b ServiceBuilder) WithShutter(s Shutter) ServiceBuilder {
+	return b.cloneWithShutter(s)
 }
 
-func (b ServiceBuilder) WithErrorShutterFunc(f func(http.ResponseWriter, *http.Request, error)) ServiceBuilder {
-	return b.WithErrorShutter(ErrorShutterFunc(f))
+func (b ServiceBuilder) WithShutterFunc(f func(http.ResponseWriter, *http.Request, error)) ServiceBuilder {
+	return b.WithShutter(ShutterFunc(f))
 }
 
 func (b ServiceBuilder) Apply(s Service) http.Handler {

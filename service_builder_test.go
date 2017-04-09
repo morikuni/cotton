@@ -47,7 +47,7 @@ func TestServiceBuilder(t *testing.T) {
 	}).AppendCatchers(
 		Tester{assert, &count, 5},
 		Tester{assert, &count, 6},
-	).WithErrorShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
+	).WithShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
 		assert.Equal(7, count)
 		w.WriteHeader(http.StatusTeapot)
 		w.Write([]byte(err.Error()))

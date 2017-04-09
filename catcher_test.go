@@ -47,7 +47,7 @@ func TestApplyCatcher(t *testing.T) {
 		return err
 	})
 
-	s := ErrorShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
+	s := ShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
 		assert.Equal(dummyError, err)
 		assert.Equal(1, count)
 		count++
