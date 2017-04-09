@@ -10,7 +10,7 @@ var (
 
 type ServiceBuilder struct {
 	filter  Filter
-	handler ErrorHandler
+	catcher Catcher
 	shutter ErrorShutter
 }
 
@@ -19,7 +19,7 @@ func newServiceBuilder() ServiceBuilder {
 }
 
 func (b ServiceBuilder) cloneWithFilter(f Filter) ServiceBuilder {
-	return ServiceBuilder{f, b.handler, b.shutter}
+	return ServiceBuilder{f, b.catcher, b.shutter}
 }
 
 func (b ServiceBuilder) AppendFilters(fs ...Filter) ServiceBuilder {
@@ -34,24 +34,24 @@ func (b ServiceBuilder) AppendFilterFunc(f func(http.ResponseWriter, *http.Reque
 	return b.AppendFilters(FilterFunc(f))
 }
 
-func (b ServiceBuilder) cloneWithErrorHandler(eh ErrorHandler) ServiceBuilder {
-	return ServiceBuilder{b.filter, eh, b.shutter}
+func (b ServiceBuilder) cloneWithCatcher(c Catcher) ServiceBuilder {
+	return ServiceBuilder{b.filter, c, b.shutter}
 }
 
-func (b ServiceBuilder) AppendErrorHandlers(ehs ...ErrorHandler) ServiceBuilder {
-	eh := ComposeErrorHandlers(ehs...)
-	if b.handler != nil {
-		eh = ComposeErrorHandlers(b.handler, eh)
+func (b ServiceBuilder) AppendCatchers(cs ...Catcher) ServiceBuilder {
+	c := ComposeCatchers(cs...)
+	if b.catcher != nil {
+		c = ComposeCatchers(b.catcher, c)
 	}
-	return b.cloneWithErrorHandler(eh)
+	return b.cloneWithCatcher(c)
 }
 
-func (b ServiceBuilder) AppendErrorHandlerFunc(f func(http.ResponseWriter, *http.Request, error) error) ServiceBuilder {
-	return b.AppendErrorHandlers(ErrorHandlerFunc(f))
+func (b ServiceBuilder) AppendCatcherFunc(f func(http.ResponseWriter, *http.Request, error) error) ServiceBuilder {
+	return b.AppendCatchers(CatcherFunc(f))
 }
 
 func (b ServiceBuilder) cloneWithErrorShutter(es ErrorShutter) ServiceBuilder {
-	return ServiceBuilder{b.filter, b.handler, es}
+	return ServiceBuilder{b.filter, b.catcher, es}
 }
 
 func (b ServiceBuilder) WithErrorShutter(es ErrorShutter) ServiceBuilder {
@@ -64,8 +64,8 @@ func (b ServiceBuilder) WithErrorShutterFunc(f func(http.ResponseWriter, *http.R
 
 func (b ServiceBuilder) Apply(s Service) http.Handler {
 	shutter := b.shutter
-	if b.handler != nil {
-		shutter = ApplyErrorHandler(b.handler, shutter)
+	if b.catcher != nil {
+		shutter = ApplyCatcher(b.catcher, shutter)
 	}
 	if b.filter != nil {
 		s = ApplyFilter(b.filter, s)

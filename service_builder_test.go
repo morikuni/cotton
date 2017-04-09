@@ -40,11 +40,11 @@ func TestServiceBuilder(t *testing.T) {
 	}).AppendFilters(
 		Tester{assert, &count, 1},
 		Tester{assert, &count, 2},
-	).AppendErrorHandlerFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
+	).AppendCatcherFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
 		assert.Equal(4, count)
 		count++
 		return err
-	}).AppendErrorHandlers(
+	}).AppendCatchers(
 		Tester{assert, &count, 5},
 		Tester{assert, &count, 6},
 	).WithErrorShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
@@ -62,5 +62,5 @@ func TestServiceBuilder(t *testing.T) {
 	assert.Equal("test", rec.Body.String())
 	assert.Equal(http.StatusTeapot, rec.Code)
 	assert.Equal(nil, EmptyServiceBuilder.filter)
-	assert.Equal(nil, EmptyServiceBuilder.handler)
+	assert.Equal(nil, EmptyServiceBuilder.catcher)
 }

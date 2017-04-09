@@ -13,35 +13,35 @@ func TestComposeErrorHanlers(t *testing.T) {
 
 	dummyError := errors.New("dummy")
 	count := 0
-	h1 := ErrorHandlerFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
+	c1 := CatcherFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
 		assert.Equal(0, count)
 		count++
 		return err
 	})
 
-	h2 := ErrorHandlerFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
+	c2 := CatcherFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
 		assert.Equal(dummyError, err)
 		assert.Equal(1, count)
 		count++
 		return nil
 	})
 
-	h3 := ErrorHandlerFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
+	c3 := CatcherFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
 		assert.Fail("unexpected call")
 		return nil
 	})
 
-	err := ComposeErrorHandlers(h1, h2, h3).HandleError(nil, nil, dummyError)
+	err := ComposeCatchers(c1, c2, c3).HandleError(nil, nil, dummyError)
 	assert.Equal(2, count)
 	assert.Equal(nil, err)
 }
 
-func TestApplyErrorHandler(t *testing.T) {
+func TestApplyCatcher(t *testing.T) {
 	assert := assert.New(t)
 
 	dummyError := errors.New("dummy")
 	count := 0
-	h := ErrorHandlerFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
+	c := CatcherFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
 		assert.Equal(0, count)
 		count++
 		return err
@@ -53,6 +53,6 @@ func TestApplyErrorHandler(t *testing.T) {
 		count++
 	})
 
-	ApplyErrorHandler(h, s).ShutError(nil, nil, dummyError)
+	ApplyCatcher(c, s).ShutError(nil, nil, dummyError)
 	assert.Equal(2, count)
 }
