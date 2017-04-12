@@ -33,10 +33,12 @@ func TestServiceBuilder(t *testing.T) {
 	b := EmptyServiceBuilder
 
 	count := 0
-	handler := b.AppendFilterFunc(func(w http.ResponseWriter, r *http.Request, next Service) error {
-		assert.Equal(0, count)
-		count++
-		return next.TryServeHTTP(w, r)
+	handler := b.AppendMiddlewares(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(0, count)
+			count++
+			next.ServeHTTP(w, r)
+		})
 	}).AppendFilters(
 		Tester{assert, &count, 1},
 		Tester{assert, &count, 2},

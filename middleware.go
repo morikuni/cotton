@@ -4,38 +4,13 @@ import (
 	"net/http"
 )
 
-type Middleware interface {
-	WrapHandler(w http.ResponseWriter, r *http.Request, h http.Handler)
-}
+type Middleware func(http.Handler) http.Handler
 
-type MiddlewareFunc func(w http.ResponseWriter, r *http.Request, h http.Handler)
-
-func (m MiddlewareFunc) WrapHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {
-	m(w, r, h)
-}
-
-func ComposeMiddlewares(middlewares ...Middleware) Middleware {
-	l := len(middlewares)
-	switch l {
-	case 0:
-		panic(ErrEmptyArgs)
-	case 1:
-		return middlewares[0]
-	default:
-		m := middlewares[0]
-		next := ComposeMiddlewares(middlewares[1:]...)
-		return MiddlewareFunc(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
-			ApplyMiddleware(m, ApplyMiddleware(next, h)).ServeHTTP(w, r)
-		})
-	}
-}
-
-func ApplyMiddleware(m Middleware, h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		m.WrapHandler(w, r, h)
-	})
-}
-
-func ApplyMiddlewareToFunc(m Middleware, h func(http.ResponseWriter, *http.Request)) http.Handler {
-	return ApplyMiddleware(m, http.HandlerFunc(h))
+func (m Middleware) WrapService(w http.ResponseWriter, r *http.Request, s Service) error {
+	var err error
+	h := m(http.HandlerFunc(func(w2 http.ResponseWriter, r2 *http.Request) {
+		err = s.TryServeHTTP(w2, r2)
+	}))
+	h.ServeHTTP(w, r)
+	return err
 }

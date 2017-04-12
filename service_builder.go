@@ -35,13 +35,11 @@ func (b ServiceBuilder) AppendFilterFunc(f func(http.ResponseWriter, *http.Reque
 }
 
 func (b ServiceBuilder) AppendMiddlewares(ms ...Middleware) ServiceBuilder {
-	m := ComposeMiddlewares(ms...)
-	f := MiddlewareToFilter(m)
-	return b.AppendFilters(f)
-}
-
-func (b ServiceBuilder) AppendMiddlewareFunc(f func(http.ResponseWriter, *http.Request, http.Handler)) ServiceBuilder {
-	return b.AppendMiddlewares(MiddlewareFunc(f))
+	filters := make([]Filter, len(ms))
+	for i, m := range ms {
+		filters[i] = m
+	}
+	return b.AppendFilters(filters...)
 }
 
 func (b ServiceBuilder) cloneWithCatcher(c Catcher) ServiceBuilder {
