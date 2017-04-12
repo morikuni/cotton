@@ -27,10 +27,10 @@ func (f Tester) CatchError(w http.ResponseWriter, r *http.Request, err error) er
 	return err
 }
 
-func TestServiceBuilder(t *testing.T) {
+func TestBuilder(t *testing.T) {
 	assert := assert.New(t)
 
-	b := EmptyServiceBuilder
+	b := EmptyBuilder
 
 	count := 0
 	handler := b.AppendMiddlewares(func(next http.Handler) http.Handler {
@@ -63,6 +63,6 @@ func TestServiceBuilder(t *testing.T) {
 	handler.ServeHTTP(rec, nil)
 	assert.Equal("test", rec.Body.String())
 	assert.Equal(http.StatusTeapot, rec.Code)
-	assert.Equal(nil, EmptyServiceBuilder.filter)
-	assert.Equal(nil, EmptyServiceBuilder.catcher)
+	assert.Equal(nil, EmptyBuilder.filter)
+	assert.Equal(nil, EmptyBuilder.catcher)
 }
