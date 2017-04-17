@@ -18,6 +18,7 @@ A typical middleware stack is like this.
 ```go
 type Middleware func(http.Handler) http.Handler
 
+// from net/http
 type Handler interface {
 	ServeHTTP(ResponseWriter, *Request)
 }
@@ -78,6 +79,7 @@ type Shutter interface {
 	ShutError(w http.ResponseWriter, r *http.Request, err error)
 }
 
+// from net/http
 type Handler interface {
 	ServeHTTP(ResponseWriter, *Request)
 }
@@ -119,7 +121,7 @@ Service|        |  |     Filter     +--+   +--+    Catcher    |  |        |Shutt
        +---------- +----------------+   err   +---------------+ -+ -------+
 ```
 
-You can also use Handler as a Service, Middleware as a Filter.
+You can also use `Handler` as a `Service`, `Middleware` as a `Filter`.
 
 ## Example
 
