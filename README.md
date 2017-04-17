@@ -172,8 +172,8 @@ func main() {
 		return nil
 	}))
 	http.Handle("/error", b.ApplyFunc(func(w http.ResponseWriter, r *http.Request) error {
-        // Since this error will never be handled by Catcher,
-        // it will be 500 internal server error by yacm.DefaultShutter
+		// Since this error will never be handled by Catcher,
+		// it will be 500 internal server error by yacm.DefaultShutter
 		return errors.New("unknown error")
 	}))
 
