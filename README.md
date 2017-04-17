@@ -1,9 +1,9 @@
-# YACM(八雲) - Yet Another Composable Middleware
+# yacm(八雲) - yet another composable middleware
 
 [![Build Status](https://travis-ci.org/morikuni/yacm.svg?branch=master)](https://travis-ci.org/morikuni/yacm)
 [![GoDoc](https://godoc.org/github.com/morikuni/yacm?status.svg)](https://godoc.org/github.com/morikuni/yacm)
 
-Simple, Lightweight and Composable HTTP Handler/Middleware.
+yacm provides a way to compose handlers and middlewares for `net/http`, inspired by Twitter's Finagle.
 
 ## Install
 
@@ -13,22 +13,113 @@ go get github.com/morikuni/yacm
 
 ## Design
 
-YACM is designed as Middleware for `http.HandlerFunc` and work with `net/http`.  
-There are 4 important types.
+A typical middleware stack is like this.
 
-- http.HandlerFunc
-- Middleware
-- Service
-- ErrorHandler
+```go
+type Middleware func(http.Handler) http.Handler
 
-Flexible `http.HandlerFunc` can be made by composing these types.
+type Handler interface {
+	ServeHTTP(ResponseWriter, *Request)
+}
+```
+
+Composition rule is
 
 ```
-Middleware + Middleware       => Middleware
-Middleware + http.HandlerFunc => Service
-Middleware + Service          => Service
-Service    + ErrorHandler     => http.HandlerFunc
+Middleware + Handler = Handler
 ```
+
+and some libraries provide
+
+```
+Middleware + Middleware = Middleware
+```
+
+```
+ +----------------+
+ |     Client     |
+ +---+--------^---+
+     |        |
+  req|     res|
+     |        |
+ +---v--------+---+ ----------+
+ |   Middleware   |           |
+ +---+--------^---+           |
+     |        |               |
+  req|     res|               |
+     |        |               |
+ +---v--------+---+ -+        |
+ |   Middleware   |  |        |Handler
+ +---+--------^---+  |        |
+     |        |      |        |
+  req|     res|      |Handler |
+     |        |      |        |
+ +---v--------+---+  |        |
+ |    Handler     |  |        |
+ +----------------+ -+ -------+
+```
+
+yacm's stack is this.
+
+```go
+type Filter interface {
+	WrapService(w http.ResponseWriter, r *http.Request, s Service) error
+}
+
+type Service interface {
+	TryServeHTTP(w http.ResponseWriter, r *http.Request) error
+}
+
+type Catcher interface {
+	CatchError(w http.ResponseWriter, r *http.Request, err error) error
+}
+
+type Shutter interface {
+	ShutError(w http.ResponseWriter, r *http.Request, err error)
+}
+
+type Handler interface {
+	ServeHTTP(ResponseWriter, *Request)
+}
+```
+
+`Service` corresponds to `Handler`, and `Filter` corresponds to `Middleware`.
+
+Composition rule is
+
+```
+Filter  + Filter  = Filter
+Filter  + Service = Service
+Cather  + Cather  = Cather
+Cather  + Shutter = Shutter
+Service + Shutter = Handler
+```
+
+```
+                   +----------------+
+                   |     Client     |
+                   +---+--------^---+
+                       |        |
+                    req|     res+----------+
+                       |        |          |
+       +------- +- +---v--------+---+      |  +---------------+ ----------+
+       |        |  |     Filter     +--+   +--+    Shutter    |           |
+       |        |  +---+--------^---+  |   |  +------------^--+           |
+       |        |      |        |      |   |               |              |
+       |  Filter|   req|     res|      |   |res         err|              |
+       |        |      |        |      |   |               |              |
+       |        |  +---v--------+---+  |   |  +------------+--+ -+        |
+Service|        |  |     Filter     +--+   +--+    Catcher    |  |        |Shutter
+       |        +- +---+--------^---+  |   |  +------------^--+  |        |
+       |               |        |      |   |               |     |        |
+       |            req|     res|      |   +------+     err|     |Catcher |
+       |               |        |      |          |        |     |        |
+       |           +---v--------+---+  |      +---+--------+--+  |        |
+       |           |    Service     +--+------>    Catcher    |  |        |
+       +---------- +----------------+   err   +---------------+ -+ -------+
+```
+
+You can also use Handler as a Service, Middleware as a Filter.
 
 ## Example
 
@@ -36,48 +127,58 @@ Service    + ErrorHandler     => http.HandlerFunc
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/morikuni/yacm"
 )
 
+func Logging(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, r.URL)
+		h.ServeHTTP(w, r)
+	})
+}
+
+var ErrNotGet = errors.New("method is not GET")
+
+func GetOnly(w http.ResponseWriter, r *http.Request, next yacm.Service) error {
+	if r.Method != "GET" {
+		return ErrNotGet
+	}
+	return next.TryServeHTTP(w, r)
+}
+
+func Catcher(w http.ResponseWriter, r *http.Request, err error) error {
+	switch err {
+	case ErrNotGet:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(http.StatusText(http.StatusMethodNotAllowed)))
+		return nil
+	default:
+		return err
+	}
+}
+
 func main() {
-	// Middleware + Middleware => Middleware
-	myMiddleware := yacm.Middleware(yacm.PanicFilter).And(yacm.MethodFilter(yacm.GET))
+	b := yacm.EmptyBuilder.
+		AppendMiddlewares(Logging).
+		AppendFilterFunc(GetOnly).
+		AppendCatcherFunc(Catcher)
 
-	// Middleware + http.HandlerFunc => Service
-	myService := myMiddleware.For(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello\n"))
-	})
+	http.Handle("/hello", b.ApplyFunc(func(w http.ResponseWriter, r *http.Request) error {
+		w.Write([]byte("hello"))
+		return nil
+	}))
+	http.Handle("/error", b.ApplyFunc(func(w http.ResponseWriter, r *http.Request) error {
+        // Since this error will never be handled by Catcher,
+        // it will be 500 internal server error by yacm.DefaultShutter
+		return errors.New("unknown error")
+	}))
 
-	// Service + ErrorHandler => http.HandlerFunc
-	myHandler := myService.Recover(func(w http.ResponseWriter, r *http.Request, err yacm.Error) {
-		switch e := err.(type) {
-		case yacm.PanicOccured:
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal Server Error\n"))
-			log.Println(e.Reason)
-		case yacm.MethodNotAllowed:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			w.Write([]byte("Method Not Allowed\n"))
-			log.Printf("expect %v but %s\n", e.Expect, e.Method)
-		}
-	})
-
-	http.HandleFunc("/hello", myHandler)
-	http.ListenAndServe("127.0.0.1:12345", nil)
+	http.ListenAndServe(":8080", nil)
 }
 ```
 
-```sh
-$ go run main/main.go &
-
-$ curl -X "GET" "http://127.0.0.1:12345/hello"
-Hello
-
-$ curl -X "PUT" "http://127.0.0.1:12345/hello"
-2016/02/28 00:19:30 expect [GET] but PUT # This is from main.go
-Method Not Allowed
-```
 
