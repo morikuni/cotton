@@ -84,3 +84,11 @@ func (b Builder) Apply(s Service) http.Handler {
 func (b Builder) ApplyFunc(f func(http.ResponseWriter, *http.Request) error) http.Handler {
 	return b.Apply(ServiceFunc(f))
 }
+
+func (b Builder) ApplyHandler(h http.Handler) http.Handler {
+	return b.Apply(HandlerToService(h))
+}
+
+func (b Builder) ApplyHandlerFunc(f func(http.ResponseWriter, *http.Request)) http.Handler {
+	return b.ApplyHandler(http.HandlerFunc(f))
+}
