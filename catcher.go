@@ -44,7 +44,3 @@ func ApplyCatcher(c Catcher, s Shutter) Shutter {
 		}
 	})
 }
-
-func ApplyCatcherToFunc(c Catcher, s func(http.ResponseWriter, *http.Request, error)) Shutter {
-	return ApplyCatcher(c, ShutterFunc(s))
-}

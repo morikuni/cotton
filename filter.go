@@ -35,7 +35,3 @@ func ApplyFilter(f Filter, s Service) Service {
 		return f.WrapService(w, r, s)
 	})
 }
-
-func ApplyFilterToFunc(f Filter, s func(http.ResponseWriter, *http.Request) error) Service {
-	return ApplyFilter(f, ServiceFunc(s))
-}
