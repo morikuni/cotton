@@ -26,11 +26,11 @@ func TestMiddleware(t *testing.T) {
 		return s.TryServeHTTP(w, r)
 	})
 
-	s := ApplyFilterToFunc(ComposeFilters(m, f), func(w http.ResponseWriter, r *http.Request) error {
+	s := ApplyFilter(ComposeFilters(m, f), ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		assert.Equal(2, count)
 		count++
 		return errors.New("test")
-	})
+	}))
 
 	err := s.TryServeHTTP(nil, nil)
 	assert.Equal(errors.New("test"), err)
