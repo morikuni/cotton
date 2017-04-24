@@ -43,12 +43,12 @@ func TestBuilder(t *testing.T) {
 		Tester{assert, &count, 1},
 		Tester{assert, &count, 2},
 	).AppendCatcherFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
-		assert.Equal(4, count)
+		assert.Equal(6, count)
 		count++
 		return err
 	}).AppendCatchers(
+		Tester{assert, &count, 4},
 		Tester{assert, &count, 5},
-		Tester{assert, &count, 6},
 	).WithShutterFunc(func(w http.ResponseWriter, r *http.Request, err error) {
 		assert.Equal(7, count)
 		w.WriteHeader(http.StatusTeapot)

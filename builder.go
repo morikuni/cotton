@@ -49,7 +49,7 @@ func (b Builder) cloneWithCatcher(c Catcher) Builder {
 func (b Builder) AppendCatchers(cs ...Catcher) Builder {
 	c := ComposeCatchers(cs...)
 	if b.catcher != nil {
-		c = ComposeCatchers(b.catcher, c)
+		c = ComposeCatchers(c, b.catcher)
 	}
 	return b.cloneWithCatcher(c)
 }
