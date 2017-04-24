@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/morikuni/yacm.svg?branch=master)](https://travis-ci.org/morikuni/yacm)
 [![GoDoc](https://godoc.org/github.com/morikuni/yacm?status.svg)](https://godoc.org/github.com/morikuni/yacm)
 
-yacm provides a way to compose handlers and middlewares for `net/http`, inspired by Twitter's Finagle.
+yacm provides a way to build a http handlers with middlewares.
 
 ## Install
 
@@ -86,6 +86,7 @@ type Handler interface {
 ```
 
 `Service` corresponds to `Handler`, and `Filter` corresponds to `Middleware`.
+The difference is that these may return an error.
 
 Composition rule is
 

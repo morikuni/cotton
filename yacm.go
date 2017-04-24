@@ -1,4 +1,4 @@
-// yacm provides a way to compose handlers and middlewares for net/http, inspired by Twitter's Finagle.
+// yacm provides a way to build a http handlers with middlewares.
 package yacm
 
 import (
