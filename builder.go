@@ -51,11 +51,11 @@ func (b Builder) cloneWithCatcher(c Catcher) Builder {
 	return Builder{b.filter, c, b.shutter}
 }
 
-// AppendCatchers appends Catchers to the head of the current Catcher.
+// AppendCatchers appends Catchers to the tail of the current Catcher.
 func (b Builder) AppendCatchers(cs ...Catcher) Builder {
 	c := ComposeCatchers(cs...)
 	if b.catcher != nil {
-		c = ComposeCatchers(c, b.catcher)
+		c = ComposeCatchers(b.catcher, c)
 	}
 	return b.cloneWithCatcher(c)
 }
