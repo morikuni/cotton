@@ -1,4 +1,4 @@
-// yacm provides a way to build a http handlers with middlewares.
+// Package yacm provides a way to build a http handlers with middlewares.
 package yacm
 
 import (

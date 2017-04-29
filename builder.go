@@ -11,6 +11,7 @@ type Builder struct {
 	Shutter Shutter
 }
 
+// NewBuilder creates a new Builder.
 func NewBuilder() Builder {
 	return Builder{}
 }
@@ -19,7 +20,7 @@ func (b Builder) cloneWithFilter(f Filter) Builder {
 	return Builder{f, b.Catcher, b.Shutter}
 }
 
-// AppendFilter appends Filters to the tail of the current Filter.
+// AppendFilters appends Filters to the tail of the current Filter.
 func (b Builder) AppendFilters(fs ...Filter) Builder {
 	f := ComposeFilters(fs...)
 	if b.Filter != nil {

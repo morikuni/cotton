@@ -36,7 +36,7 @@ func ComposeFilters(filters ...Filter) Filter {
 	}
 }
 
-// ApplyFiter apply Filter to Shutter and creates a new Service.
+// ApplyFilter apply Filter to Shutter and creates a new Service.
 func ApplyFilter(f Filter, s Service) Service {
 	return ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		return f.WrapService(w, r, s)
