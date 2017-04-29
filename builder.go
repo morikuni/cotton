@@ -4,31 +4,26 @@ import (
 	"net/http"
 )
 
-var (
-	// EmptyBuilder is the empty Builder.
-	EmptyBuilder = newBuilder()
-)
-
 // Builder builds a http.Handler from Filters, Catchers, Shutters, http.Handlers and Services.
 type Builder struct {
-	filter  Filter
-	catcher Catcher
-	shutter Shutter
+	Filter  Filter
+	Catcher Catcher
+	Shutter Shutter
 }
 
-func newBuilder() Builder {
-	return Builder{nil, nil, DefaultShutter}
+func NewBuilder() Builder {
+	return Builder{}
 }
 
 func (b Builder) cloneWithFilter(f Filter) Builder {
-	return Builder{f, b.catcher, b.shutter}
+	return Builder{f, b.Catcher, b.Shutter}
 }
 
 // AppendFilter appends Filters to the tail of the current Filter.
 func (b Builder) AppendFilters(fs ...Filter) Builder {
 	f := ComposeFilters(fs...)
-	if b.filter != nil {
-		f = ComposeFilters(b.filter, f)
+	if b.Filter != nil {
+		f = ComposeFilters(b.Filter, f)
 	}
 	return b.cloneWithFilter(f)
 }
@@ -48,14 +43,14 @@ func (b Builder) AppendMiddlewares(ms ...Middleware) Builder {
 }
 
 func (b Builder) cloneWithCatcher(c Catcher) Builder {
-	return Builder{b.filter, c, b.shutter}
+	return Builder{b.Filter, c, b.Shutter}
 }
 
 // AppendCatchers appends Catchers to the tail of the current Catcher.
 func (b Builder) AppendCatchers(cs ...Catcher) Builder {
 	c := ComposeCatchers(cs...)
-	if b.catcher != nil {
-		c = ComposeCatchers(b.catcher, c)
+	if b.Catcher != nil {
+		c = ComposeCatchers(b.Catcher, c)
 	}
 	return b.cloneWithCatcher(c)
 }
@@ -66,7 +61,7 @@ func (b Builder) AppendCatcherFunc(f func(http.ResponseWriter, *http.Request, er
 }
 
 func (b Builder) cloneWithShutter(s Shutter) Builder {
-	return Builder{b.filter, b.catcher, s}
+	return Builder{b.Filter, b.Catcher, s}
 }
 
 // WithShutter replace the Shutter by the argument.
@@ -81,12 +76,15 @@ func (b Builder) WithShutterFunc(f func(http.ResponseWriter, *http.Request, erro
 
 // Apply applys the Builder to Service and creates a http.Handler.
 func (b Builder) Apply(s Service) http.Handler {
-	shutter := b.shutter
-	if b.catcher != nil {
-		shutter = ApplyCatcher(b.catcher, shutter)
+	shutter := b.Shutter
+	if shutter == nil {
+		shutter = DefaultShutter
 	}
-	if b.filter != nil {
-		s = ApplyFilter(b.filter, s)
+	if b.Catcher != nil {
+		shutter = ApplyCatcher(b.Catcher, shutter)
+	}
+	if b.Filter != nil {
+		s = ApplyFilter(b.Filter, s)
 	}
 	return ServiceToHandler(s, shutter)
 }

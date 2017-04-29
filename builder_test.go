@@ -30,7 +30,7 @@ func (f Tester) CatchError(w http.ResponseWriter, r *http.Request, err error) er
 func TestBuilder(t *testing.T) {
 	assert := assert.New(t)
 
-	b := EmptyBuilder
+	b := NewBuilder()
 
 	count := 0
 	handler := b.AppendMiddlewares(func(next http.Handler) http.Handler {
@@ -63,6 +63,6 @@ func TestBuilder(t *testing.T) {
 	handler.ServeHTTP(rec, nil)
 	assert.Equal("test", rec.Body.String())
 	assert.Equal(http.StatusTeapot, rec.Code)
-	assert.Equal(nil, EmptyBuilder.filter)
-	assert.Equal(nil, EmptyBuilder.catcher)
+	assert.Equal(nil, b.Filter)
+	assert.Equal(nil, b.Catcher)
 }
