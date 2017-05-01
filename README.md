@@ -165,16 +165,16 @@ func Catcher(w http.ResponseWriter, r *http.Request, err error) error {
 }
 
 func main() {
-	b := yacm.EmptyBuilder.
+	env := yacm.NewEnv().
 		AppendMiddlewares(Logging).
 		AppendFilterFunc(GetOnly).
 		AppendCatcherFunc(Catcher)
 
-	http.Handle("/hello", b.ApplyFunc(func(w http.ResponseWriter, r *http.Request) error {
+	http.Handle("/hello", env.ServeFunc(func(w http.ResponseWriter, r *http.Request) error {
 		w.Write([]byte("hello"))
 		return nil
 	}))
-	http.Handle("/error", b.ApplyFunc(func(w http.ResponseWriter, r *http.Request) error {
+	http.Handle("/error", env.ServeFunc(func(w http.ResponseWriter, r *http.Request) error {
 		// Since this error will never be handled by Catcher,
 		// it will be 500 internal server error by yacm.DefaultShutter
 		return errors.New("unknown error")

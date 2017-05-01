@@ -77,8 +77,8 @@ func (e Env) WithShutterFunc(f func(http.ResponseWriter, *http.Request, error)) 
 	return e.WithShutter(ShutterFunc(f))
 }
 
-// Apply applys the Env to Service and creates a http.Handler.
-func (e Env) Apply(s Service) http.Handler {
+// Serve applys the Env to Service and creates a http.Handler.
+func (e Env) Serve(s Service) http.Handler {
 	shutter := e.Shutter
 	if shutter == nil {
 		shutter = DefaultShutter
@@ -92,17 +92,17 @@ func (e Env) Apply(s Service) http.Handler {
 	return ServiceToHandler(s, shutter)
 }
 
-// ApplyFunc is same as Apply but it takes ServiceFunc.
-func (e Env) ApplyFunc(f func(http.ResponseWriter, *http.Request) error) http.Handler {
-	return e.Apply(ServiceFunc(f))
+// ServeFunc is same as Serve but it takes ServiceFunc.
+func (e Env) ServeFunc(f func(http.ResponseWriter, *http.Request) error) http.Handler {
+	return e.Serve(ServiceFunc(f))
 }
 
-// ApplyHandler converts http.Handler to Service, then apply the Env.
-func (e Env) ApplyHandler(h http.Handler) http.Handler {
-	return e.Apply(HandlerToService(h))
+// Handle converts http.Handler to Service, then apply the Env.
+func (e Env) Handle(h http.Handler) http.Handler {
+	return e.Serve(HandlerToService(h))
 }
 
-// ApplyHandlerFunc is same as ApplyHandler but it takes http.HandlerFunc.
-func (e Env) ApplyHandlerFunc(f func(http.ResponseWriter, *http.Request)) http.Handler {
-	return e.ApplyHandler(http.HandlerFunc(f))
+// HandleFunc is same as Handle but it takes http.HandlerFunc.
+func (e Env) HandleFunc(f func(http.ResponseWriter, *http.Request)) http.Handler {
+	return e.Handle(http.HandlerFunc(f))
 }
