@@ -53,7 +53,7 @@ func TestEnv(t *testing.T) {
 		assert.Equal(7, count)
 		w.WriteHeader(http.StatusTeapot)
 		w.Write([]byte(err.Error()))
-	}).ApplyFunc(func(w http.ResponseWriter, r *http.Request) error {
+	}).ServeFunc(func(w http.ResponseWriter, r *http.Request) error {
 		assert.Equal(3, count)
 		count++
 		return errors.New("test")
