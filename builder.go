@@ -4,104 +4,105 @@ import (
 	"net/http"
 )
 
-// Builder builds a http.Handler from Filters, Catchers, Shutters, http.Handlers and Services.
-// Builder is immutable, so any methods never changes its properties and return a new Builder.
-type Builder struct {
+// Env is a environment for building http.Handler and Service.
+// Env contains Filter, Catcher and Shutter and it is immutable,
+// so any methods never changes its state and return a new Env.
+type Env struct {
 	Filter  Filter
 	Catcher Catcher
 	Shutter Shutter
 }
 
-// NewBuilder creates a new Builder.
-func NewBuilder() Builder {
-	return Builder{}
+// NewEnv creates a new Env.
+func NewEnv() Env {
+	return Env{}
 }
 
-func (b Builder) cloneWithFilter(f Filter) Builder {
-	return Builder{f, b.Catcher, b.Shutter}
+func (e Env) cloneWithFilter(f Filter) Env {
+	return Env{f, e.Catcher, e.Shutter}
 }
 
 // AppendFilters appends Filters to the tail of the current Filter.
-func (b Builder) AppendFilters(fs ...Filter) Builder {
+func (e Env) AppendFilters(fs ...Filter) Env {
 	f := ComposeFilters(fs...)
-	if b.Filter != nil {
-		f = ComposeFilters(b.Filter, f)
+	if e.Filter != nil {
+		f = ComposeFilters(e.Filter, f)
 	}
-	return b.cloneWithFilter(f)
+	return e.cloneWithFilter(f)
 }
 
 // AppendFilterFunc is same as AppendFilters but it takes FilterFunc.
-func (b Builder) AppendFilterFunc(f func(http.ResponseWriter, *http.Request, Service) error) Builder {
-	return b.AppendFilters(FilterFunc(f))
+func (e Env) AppendFilterFunc(f func(http.ResponseWriter, *http.Request, Service) error) Env {
+	return e.AppendFilters(FilterFunc(f))
 }
 
 // AppendMiddlewares converts Middlewares to Filters, then appends to the tail of the current Filter.
-func (b Builder) AppendMiddlewares(ms ...Middleware) Builder {
+func (e Env) AppendMiddlewares(ms ...Middleware) Env {
 	filters := make([]Filter, len(ms))
 	for i, m := range ms {
 		filters[i] = m
 	}
-	return b.AppendFilters(filters...)
+	return e.AppendFilters(filters...)
 }
 
-func (b Builder) cloneWithCatcher(c Catcher) Builder {
-	return Builder{b.Filter, c, b.Shutter}
+func (e Env) cloneWithCatcher(c Catcher) Env {
+	return Env{e.Filter, c, e.Shutter}
 }
 
 // AppendCatchers appends Catchers to the tail of the current Catcher.
-func (b Builder) AppendCatchers(cs ...Catcher) Builder {
+func (e Env) AppendCatchers(cs ...Catcher) Env {
 	c := ComposeCatchers(cs...)
-	if b.Catcher != nil {
-		c = ComposeCatchers(b.Catcher, c)
+	if e.Catcher != nil {
+		c = ComposeCatchers(e.Catcher, c)
 	}
-	return b.cloneWithCatcher(c)
+	return e.cloneWithCatcher(c)
 }
 
 // AppendCatcherFunc is same as AppendCatchers but it takes CatcherFunc.
-func (b Builder) AppendCatcherFunc(f func(http.ResponseWriter, *http.Request, error) error) Builder {
-	return b.AppendCatchers(CatcherFunc(f))
+func (e Env) AppendCatcherFunc(f func(http.ResponseWriter, *http.Request, error) error) Env {
+	return e.AppendCatchers(CatcherFunc(f))
 }
 
-func (b Builder) cloneWithShutter(s Shutter) Builder {
-	return Builder{b.Filter, b.Catcher, s}
+func (e Env) cloneWithShutter(s Shutter) Env {
+	return Env{e.Filter, e.Catcher, s}
 }
 
 // WithShutter replace the Shutter by the argument.
-func (b Builder) WithShutter(s Shutter) Builder {
-	return b.cloneWithShutter(s)
+func (e Env) WithShutter(s Shutter) Env {
+	return e.cloneWithShutter(s)
 }
 
 // WithShutterFunc is same as WithShutterFunc but it takes WithShutterFunc.
-func (b Builder) WithShutterFunc(f func(http.ResponseWriter, *http.Request, error)) Builder {
-	return b.WithShutter(ShutterFunc(f))
+func (e Env) WithShutterFunc(f func(http.ResponseWriter, *http.Request, error)) Env {
+	return e.WithShutter(ShutterFunc(f))
 }
 
-// Apply applys the Builder to Service and creates a http.Handler.
-func (b Builder) Apply(s Service) http.Handler {
-	shutter := b.Shutter
+// Apply applys the Env to Service and creates a http.Handler.
+func (e Env) Apply(s Service) http.Handler {
+	shutter := e.Shutter
 	if shutter == nil {
 		shutter = DefaultShutter
 	}
-	if b.Catcher != nil {
-		shutter = ApplyCatcher(b.Catcher, shutter)
+	if e.Catcher != nil {
+		shutter = ApplyCatcher(e.Catcher, shutter)
 	}
-	if b.Filter != nil {
-		s = ApplyFilter(b.Filter, s)
+	if e.Filter != nil {
+		s = ApplyFilter(e.Filter, s)
 	}
 	return ServiceToHandler(s, shutter)
 }
 
 // ApplyFunc is same as Apply but it takes ServiceFunc.
-func (b Builder) ApplyFunc(f func(http.ResponseWriter, *http.Request) error) http.Handler {
-	return b.Apply(ServiceFunc(f))
+func (e Env) ApplyFunc(f func(http.ResponseWriter, *http.Request) error) http.Handler {
+	return e.Apply(ServiceFunc(f))
 }
 
-// ApplyHandler converts http.Handler to Service, then apply the Builder.
-func (b Builder) ApplyHandler(h http.Handler) http.Handler {
-	return b.Apply(HandlerToService(h))
+// ApplyHandler converts http.Handler to Service, then apply the Env.
+func (e Env) ApplyHandler(h http.Handler) http.Handler {
+	return e.Apply(HandlerToService(h))
 }
 
 // ApplyHandlerFunc is same as ApplyHandler but it takes http.HandlerFunc.
-func (b Builder) ApplyHandlerFunc(f func(http.ResponseWriter, *http.Request)) http.Handler {
-	return b.ApplyHandler(http.HandlerFunc(f))
+func (e Env) ApplyHandlerFunc(f func(http.ResponseWriter, *http.Request)) http.Handler {
+	return e.ApplyHandler(http.HandlerFunc(f))
 }
