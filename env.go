@@ -97,7 +97,7 @@ func (e Env) ServeFunc(f func(http.ResponseWriter, *http.Request) error) http.Ha
 	return e.Serve(ServiceFunc(f))
 }
 
-// Handle converts http.Handler to Service, then apply the Env.
+// Handle converts http.Handler to Service, then call the Serve with it.
 func (e Env) Handle(h http.Handler) http.Handler {
 	return e.Serve(HandlerToService(h))
 }
