@@ -5,6 +5,7 @@ import (
 )
 
 // Builder builds a http.Handler from Filters, Catchers, Shutters, http.Handlers and Services.
+// Builder is immutable, so any methods never changes its properties and return a new Builder.
 type Builder struct {
 	Filter  Filter
 	Catcher Catcher
@@ -70,7 +71,7 @@ func (b Builder) WithShutter(s Shutter) Builder {
 	return b.cloneWithShutter(s)
 }
 
-// WithShutterFunc is save as WithShutterFunc but it takes WithShutterFunc.
+// WithShutterFunc is same as WithShutterFunc but it takes WithShutterFunc.
 func (b Builder) WithShutterFunc(f func(http.ResponseWriter, *http.Request, error)) Builder {
 	return b.WithShutter(ShutterFunc(f))
 }

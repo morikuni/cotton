@@ -6,7 +6,7 @@ import (
 
 // Filter is a middleware for Service.
 type Filter interface {
-	// WrapService handles the request before running Service.
+	// WrapService handles the request and call Service.
 	WrapService(w http.ResponseWriter, r *http.Request, s Service) error
 }
 

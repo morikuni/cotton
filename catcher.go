@@ -6,7 +6,7 @@ import (
 
 // Catcher handles an error from Service or Filter.
 type Catcher interface {
-	// CatchError handles the error but it may pass the error if it was unexpected.
+	// CatchError handles an error, but it may returns an error if it was unexpected.
 	CatchError(w http.ResponseWriter, r *http.Request, err error) error
 }
 
