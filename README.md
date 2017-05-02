@@ -167,8 +167,8 @@ func Catcher(w http.ResponseWriter, r *http.Request, err error) error {
 func main() {
 	env := yacm.NewEnv().
 		AppendMiddlewares(Logging).
-		AppendFilterFunc(GetOnly).
-		AppendCatcherFunc(Catcher)
+		AppendFilterFuncs(GetOnly).
+		AppendCatcherFuncs(Catcher)
 
 	http.Handle("/hello", env.ServeFunc(func(w http.ResponseWriter, r *http.Request) error {
 		w.Write([]byte("hello"))
