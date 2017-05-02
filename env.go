@@ -31,9 +31,13 @@ func (e Env) AppendFilters(fs ...Filter) Env {
 	return e.cloneWithFilter(f)
 }
 
-// AppendFilterFunc is same as AppendFilters but it takes FilterFunc.
-func (e Env) AppendFilterFunc(f func(http.ResponseWriter, *http.Request, Service) error) Env {
-	return e.AppendFilters(FilterFunc(f))
+// AppendFilterFuncs is same as AppendFilters but it takes FilterFunc.
+func (e Env) AppendFilterFuncs(fs ...func(http.ResponseWriter, *http.Request, Service) error) Env {
+	filters := make([]Filter, len(fs))
+	for i, f := range fs {
+		filters[i] = FilterFunc(f)
+	}
+	return e.AppendFilters(filters...)
 }
 
 // AppendMiddlewares converts Middlewares to Filters, then appends to the tail of the current Filter.
@@ -58,9 +62,13 @@ func (e Env) AppendCatchers(cs ...Catcher) Env {
 	return e.cloneWithCatcher(c)
 }
 
-// AppendCatcherFunc is same as AppendCatchers but it takes CatcherFunc.
-func (e Env) AppendCatcherFunc(f func(http.ResponseWriter, *http.Request, error) error) Env {
-	return e.AppendCatchers(CatcherFunc(f))
+// AppendCatcherFuncs is same as AppendCatchers but it takes CatcherFunc.
+func (e Env) AppendCatcherFuncs(fs ...func(http.ResponseWriter, *http.Request, error) error) Env {
+	catchers := make([]Catcher, len(fs))
+	for i, f := range fs {
+		catchers[i] = CatcherFunc(f)
+	}
+	return e.AppendCatchers(catchers...)
 }
 
 func (e Env) cloneWithShutter(s Shutter) Env {

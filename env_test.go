@@ -42,7 +42,7 @@ func TestEnv(t *testing.T) {
 	}).AppendFilters(
 		Tester{assert, &count, 1},
 		Tester{assert, &count, 2},
-	).AppendCatcherFunc(func(w http.ResponseWriter, r *http.Request, err error) error {
+	).AppendCatcherFuncs(func(w http.ResponseWriter, r *http.Request, err error) error {
 		assert.Equal(4, count)
 		count++
 		return err
