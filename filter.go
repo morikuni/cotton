@@ -19,12 +19,12 @@ func (f FilterFunc) WrapService(w http.ResponseWriter, r *http.Request, s Servic
 }
 
 // ComposeFilters composes multiple Filters to a single Filter.
-// This function panics when the arguments are empty.
+// NOPFilter will be returned for empty arguments.
 func ComposeFilters(filters ...Filter) Filter {
 	l := len(filters)
 	switch l {
 	case 0:
-		panic(ErrEmptyArgs)
+		return NOPFilter
 	case 1:
 		return filters[0]
 	default:
@@ -41,4 +41,13 @@ func ApplyFilter(f Filter, s Service) Service {
 	return ServiceFunc(func(w http.ResponseWriter, r *http.Request) error {
 		return f.WrapService(w, r, s)
 	})
+}
+
+var (
+	// NOPFilter is Filter that does nothing.
+	NOPFilter = FilterFunc(nopFilter)
+)
+
+func nopFilter(w http.ResponseWriter, r *http.Request, s Service) error {
+	return s.TryServeHTTP(w, r)
 }

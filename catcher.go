@@ -31,12 +31,12 @@ func (c chainedCatcher) CatchError(w http.ResponseWriter, r *http.Request, err e
 }
 
 // ComposeCatchers composes multiple Catchers to a single Catcher.
-// This function panics when the arguments are empty.
+// NOPCatcher will be returned for empty arguments.
 func ComposeCatchers(cs ...Catcher) Catcher {
 	l := len(cs)
 	switch l {
 	case 0:
-		panic(ErrEmptyArgs)
+		return NOPCatcher
 	default:
 		return chainedCatcher(cs)
 	}
@@ -50,4 +50,13 @@ func ApplyCatcher(c Catcher, s Shutter) Shutter {
 			s.ShutError(w, r, err)
 		}
 	})
+}
+
+var (
+	// NOPCatcher is Catcher that handles nothing.
+	NOPCatcher = CatcherFunc(nopCatcher)
+)
+
+func nopCatcher(w http.ResponseWriter, r *http.Request, err error) error {
+	return err
 }
